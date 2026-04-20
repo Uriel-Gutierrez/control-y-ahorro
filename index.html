@@ -5,155 +5,304 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Control y Ahorro</title>
   <style>
-    body {
+    * {
+      box-sizing: border-box;
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f8fb;
+      padding: 0;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f7fafc;
       color: #1f2937;
+      line-height: 1.6;
     }
 
     header {
       background: linear-gradient(135deg, #0f766e, #134e4a);
       color: white;
+      padding: 80px 20px 100px;
       text-align: center;
-      padding: 60px 20px;
     }
 
     header h1 {
-      margin: 0;
-      font-size: 3em;
+      font-size: 3.2rem;
+      margin-bottom: 15px;
     }
 
     header p {
-      margin-top: 15px;
-      font-size: 1.2em;
+      font-size: 1.3rem;
+      max-width: 700px;
+      margin: auto;
+      margin-bottom: 30px;
+    }
+
+    .hero-buttons a {
+      display: inline-block;
+      margin: 10px;
+      padding: 14px 26px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: 0.3s ease;
+    }
+
+    .btn-primary {
+      background: white;
+      color: #0f766e;
+    }
+
+    .btn-primary:hover {
+      background: #e6fffb;
+    }
+
+    .btn-secondary {
+      border: 2px solid white;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.15);
     }
 
     nav {
-      background: #ffffff;
+      position: sticky;
+      top: 0;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      z-index: 1000;
       padding: 15px;
       text-align: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
     }
 
     nav a {
-      margin: 0 12px;
       text-decoration: none;
-      color: #0f766e;
-      font-weight: bold;
+      color: #134e4a;
+      font-weight: 600;
+      margin: 0 12px;
+      font-size: 0.95rem;
     }
 
     section {
-      max-width: 1000px;
+      max-width: 1100px;
       margin: auto;
-      padding: 50px 20px;
+      padding: 70px 20px;
+    }
+
+    .section-title {
+      font-size: 2rem;
+      color: #134e4a;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .section-text {
+      text-align: center;
+      max-width: 750px;
+      margin: 0 auto 40px;
+      color: #4b5563;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
     }
 
     .card {
       background: white;
-      border-radius: 14px;
+      border-radius: 16px;
       padding: 25px;
-      margin-top: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      transition: transform 0.2s ease;
     }
 
-    h2 {
-      color: #134e4a;
+    .card:hover {
+      transform: translateY(-5px);
     }
 
-    footer {
+    .card h3 {
+      color: #0f766e;
+      margin-bottom: 12px;
+    }
+
+    .highlight {
+      background: linear-gradient(135deg, #ccfbf1, #ecfeff);
+      border-left: 6px solid #0f766e;
+      padding: 30px;
+      border-radius: 18px;
+      margin-top: 25px;
+    }
+
+    .cta-box {
       background: #134e4a;
       color: white;
+      border-radius: 20px;
+      padding: 40px;
       text-align: center;
-      padding: 20px;
       margin-top: 40px;
     }
 
-    .boton {
+    .cta-box a {
       display: inline-block;
       margin-top: 20px;
-      padding: 12px 22px;
-      background: #0f766e;
-      color: white;
+      background: white;
+      color: #134e4a;
+      padding: 14px 24px;
       text-decoration: none;
-      border-radius: 8px;
+      border-radius: 10px;
       font-weight: bold;
     }
 
-    .boton:hover {
-      background: #115e59;
+    footer {
+      background: #0f172a;
+      color: white;
+      text-align: center;
+      padding: 30px 20px;
+      margin-top: 50px;
+    }
+
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 2.4rem;
+      }
+
+      header p {
+        font-size: 1.1rem;
+      }
+
+      nav a {
+        display: inline-block;
+        margin: 8px;
+      }
     }
   </style>
 </head>
 <body>
 
-  <header>
+  <header id="inicio">
     <h1>Control y Ahorro</h1>
     <p>Tu dinero, tus decisiones, tu futuro.</p>
-    <a href="#aprende" class="boton">Comenzar</a>
+    <div class="hero-buttons">
+      <a href="#aprende" class="btn-primary">Comenzar</a>
+      <a href="#escape-room" class="btn-secondary">Explorar Escape Room</a>
+    </div>
   </header>
 
   <nav>
     <a href="#inicio">Inicio</a>
     <a href="#aprende">Aprende</a>
     <a href="#organiza">Organiza tu dinero</a>
-    <a href="#escape">Escape Room</a>
+    <a href="#interactiva">Zona interactiva</a>
+    <a href="#escape-room">Escape Room</a>
     <a href="#recursos">Recursos</a>
   </nav>
 
-  <section id="inicio">
-    <h2>Bienvenido</h2>
-    <div class="card">
-      <p>
-        Bienvenido a Control y Ahorro, un sitio web educativo diseñado para apoyar a los estudiantes
-        en el aprendizaje de las finanzas personales, el ahorro y la toma de decisiones responsables
-        sobre el dinero.
-      </p>
-    </div>
-  </section>
-
   <section id="aprende">
-    <h2>Aprende</h2>
-    <div class="card">
-      <p>
-        En esta sección podrás conocer conceptos básicos como ingreso, gasto, ahorro, presupuesto
-        y metas financieras, explicados de manera clara y práctica.
-      </p>
+    <h2 class="section-title">Aprende sobre tus finanzas</h2>
+    <p class="section-text">
+      Este sitio está diseñado para apoyar a estudiantes en el aprendizaje de las finanzas personales,
+      el ahorro, la organización del dinero y la toma de decisiones responsables.
+    </p>
+
+    <div class="cards">
+      <div class="card">
+        <h3>Ingresos y gastos</h3>
+        <p>Aprende a identificar de dónde viene tu dinero y en qué se va cada semana o cada mes.</p>
+      </div>
+      <div class="card">
+        <h3>Presupuesto personal</h3>
+        <p>Conoce cómo organizar tu dinero para evitar gastos innecesarios y cumplir metas.</p>
+      </div>
+      <div class="card">
+        <h3>Gasto hormiga</h3>
+        <p>Descubre cómo pequeños gastos diarios pueden afectar tus finanzas a largo plazo.</p>
+      </div>
     </div>
   </section>
 
   <section id="organiza">
-    <h2>Organiza tu dinero</h2>
-    <div class="card">
+    <h2 class="section-title">Organiza tu dinero</h2>
+    <p class="section-text">
+      La educación financiera empieza con pequeños hábitos. Registrar tus gastos, definir metas y planear tus decisiones
+      puede ayudarte a tener mayor control sobre tu dinero.
+    </p>
+
+    <div class="highlight">
+      <h3>Meta del sitio</h3>
       <p>
-        Aquí encontrarás ideas para registrar tus gastos, planear tus metas y mejorar tus hábitos
-        financieros con estrategias sencillas.
+        Ayudar a los estudiantes a fortalecer sus conocimientos sobre ahorro, presupuesto,
+        administración del dinero y toma de decisiones financieras por medio de recursos didácticos digitales.
       </p>
     </div>
   </section>
 
-  <section id="escape">
-    <h2>Escape Room</h2>
-    <div class="card">
+  <section id="interactiva">
+    <h2 class="section-title">Zona interactiva</h2>
+    <p class="section-text">
+      Aquí se integrarán actividades, retos, ejercicios y dinámicas que permitan aplicar de manera práctica
+      los conocimientos aprendidos en el sitio.
+    </p>
+
+    <div class="cards">
+      <div class="card">
+        <h3>Retos de ahorro</h3>
+        <p>Pequeñas actividades para mejorar hábitos financieros mediante metas sencillas y realistas.</p>
+      </div>
+      <div class="card">
+        <h3>Casos prácticos</h3>
+        <p>Situaciones cotidianas para analizar decisiones relacionadas con gastos, ahorro y administración.</p>
+      </div>
+      <div class="card">
+        <h3>Ejercicios financieros</h3>
+        <p>Actividades para poner en práctica conceptos básicos de finanzas personales.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="escape-room">
+    <h2 class="section-title">Escape Room Financiero</h2>
+    <p class="section-text">
+      “Misión: Saldo a Favor” será una experiencia interactiva donde los estudiantes pondrán a prueba
+      sus conocimientos sobre gasto hormiga, presupuesto, ahorro y toma de decisiones.
+    </p>
+
+    <div class="cta-box">
+      <h3>Próximamente disponible</h3>
       <p>
-        Próximamente podrás acceder a “Misión: Saldo a Favor”, una actividad interactiva donde
-        pondrás a prueba tus conocimientos financieros de forma divertida.
+        Este espacio contendrá la actividad central e innovadora del proyecto, integrada dentro de la página web
+        como recurso didáctico digital.
       </p>
+      <a href="#recursos">Ver más recursos</a>
     </div>
   </section>
 
   <section id="recursos">
-    <h2>Recursos</h2>
-    <div class="card">
-      <p>
-        En esta parte se integrarán materiales de apoyo, consejos prácticos, actividades y recursos
-        complementarios para fortalecer tu educación financiera.
-      </p>
+    <h2 class="section-title">Recursos</h2>
+    <p class="section-text">
+      Esta sección reunirá materiales de apoyo, consejos, recursos visuales y herramientas útiles
+      para fortalecer el aprendizaje financiero.
+    </p>
+
+    <div class="cards">
+      <div class="card">
+        <h3>Consejos prácticos</h3>
+        <p>Recomendaciones sencillas para mejorar el uso del dinero en la vida diaria.</p>
+      </div>
+      <div class="card">
+        <h3>Material didáctico</h3>
+        <p>Infografías, textos y recursos de apoyo relacionados con las finanzas personales.</p>
+      </div>
+      <div class="card">
+        <h3>Herramientas</h3>
+        <p>Espacio para futuras plantillas, registros y actividades de organización financiera.</p>
+      </div>
     </div>
   </section>
 
   <footer>
-    <p>Proyecto educativo: Control y Ahorro</p>
+    <p>Control y Ahorro | Proyecto educativo sobre finanzas personales</p>
   </footer>
 
 </body>
