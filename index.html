@@ -25,10 +25,10 @@
       --white:      #ffffff;
       --card-shadow: 0 8px 32px rgba(0,0,0,.12);
     }
-
+ 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
-
+ 
     body {
       font-family: 'Nunito', sans-serif;
       background: var(--cream);
@@ -36,7 +36,7 @@
       min-height: 100vh;
       overflow-x: hidden;
     }
-
+ 
     /* ═══════════════════════════════════════════
        SCREENS SYSTEM
     ═══════════════════════════════════════════ */
@@ -45,12 +45,12 @@
       animation: fadeScreen .35s ease;
     }
     .screen.active { display: block; }
-
+ 
     @keyframes fadeScreen {
       from { opacity: 0; transform: translateY(16px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-
+ 
     /* ═══════════════════════════════════════════
        NAVBAR
     ═══════════════════════════════════════════ */
@@ -66,32 +66,32 @@
       height: 58px;
       box-shadow: 0 2px 16px rgba(0,0,0,.25);
     }
-
+ 
     .nav-brand {
       display: flex;
       align-items: center;
       gap: 10px;
       cursor: pointer;
     }
-
+ 
     .nav-logo {
       width: 36px; height: 36px;
     }
-
+ 
     .nav-title {
       font-family: 'Fredoka One', cursive;
       font-size: 1.25rem;
       color: white;
       letter-spacing: .02em;
     }
-
+ 
     .nav-title span { color: var(--gold); }
-
+ 
     .nav-links {
       display: flex;
       gap: 4px;
     }
-
+ 
     .nav-btn {
       background: none;
       border: none;
@@ -105,17 +105,17 @@
       transition: all .2s;
       letter-spacing: .03em;
     }
-
+ 
     .nav-btn:hover, .nav-btn.active {
       background: rgba(255,255,255,.15);
       color: white;
     }
-
+ 
     .nav-btn.active {
       background: var(--green);
       color: white;
     }
-
+ 
     /* ═══════════════════════════════════════════
        PAGE WRAPPER
     ═══════════════════════════════════════════ */
@@ -123,7 +123,7 @@
       padding-top: 58px;
       min-height: 100vh;
     }
-
+ 
     /* ═══════════════════════════════════════════
        ██ SCREEN: HOME
     ═══════════════════════════════════════════ */
@@ -139,7 +139,7 @@
       overflow: hidden;
       text-align: center;
     }
-
+ 
     /* floating coins background */
     .coins-bg {
       position: absolute;
@@ -147,35 +147,35 @@
       pointer-events: none;
       overflow: hidden;
     }
-
+ 
     .coin-float {
       position: absolute;
       font-size: 1.8rem;
       opacity: .18;
       animation: floatCoin linear infinite;
     }
-
+ 
     @keyframes floatCoin {
       0%   { transform: translateY(110vh) rotate(0deg); opacity: 0; }
       10%  { opacity: .18; }
       90%  { opacity: .18; }
       100% { transform: translateY(-20vh) rotate(360deg); opacity: 0; }
     }
-
+ 
     /* mascot SVG */
     .mascot-wrap {
       position: relative;
       margin-bottom: 24px;
       animation: mascotBounce 3s ease-in-out infinite;
     }
-
+ 
     @keyframes mascotBounce {
       0%, 100% { transform: translateY(0); }
       50%       { transform: translateY(-12px); }
     }
-
+ 
     .mascot-svg { width: 140px; height: 140px; filter: drop-shadow(0 10px 28px rgba(0,0,0,.35)); }
-
+ 
     /* speech bubble */
     .speech-bubble {
       position: absolute;
@@ -192,7 +192,7 @@
       box-shadow: 0 4px 16px rgba(0,0,0,.18);
       animation: bubblePop .5s .8s both cubic-bezier(.34,1.56,.64,1);
     }
-
+ 
     .speech-bubble::before {
       content: '';
       position: absolute;
@@ -202,12 +202,12 @@
       border-right-color: white;
       border-left: 0;
     }
-
+ 
     @keyframes bubblePop {
       from { opacity: 0; transform: scale(.6); }
       to   { opacity: 1; transform: scale(1); }
     }
-
+ 
     .hero-badge {
       display: inline-block;
       background: rgba(255,255,255,.15);
@@ -221,7 +221,7 @@
       border-radius: 50px;
       margin-bottom: 18px;
     }
-
+ 
     .hero h1 {
       font-family: 'Fredoka One', cursive;
       font-size: clamp(2.8rem, 7vw, 5rem);
@@ -230,16 +230,16 @@
       margin-bottom: 16px;
       letter-spacing: .01em;
     }
-
+ 
     .hero h1 .accent { color: var(--gold); }
-
+ 
     .hero-sub {
       font-size: 1.1rem;
       color: rgba(255,255,255,.75);
       max-width: 560px;
       margin: 0 auto 40px;
     }
-
+ 
     /* MENU CARDS */
     .menu-grid {
       display: grid;
@@ -249,7 +249,7 @@
       width: 100%;
       margin: 0 auto;
     }
-
+ 
     .menu-card {
       background: rgba(255,255,255,.1);
       backdrop-filter: blur(10px);
@@ -263,7 +263,7 @@
       position: relative;
       overflow: hidden;
     }
-
+ 
     .menu-card::before {
       content: '';
       position: absolute;
@@ -273,15 +273,15 @@
       transition: opacity .2s;
       border-radius: 18px;
     }
-
+ 
     .menu-card:hover {
       transform: translateY(-8px) scale(1.04);
       border-color: rgba(255,255,255,.5);
       box-shadow: 0 16px 40px rgba(0,0,0,.3);
     }
-
+ 
     .menu-card:hover::before { opacity: .25; }
-
+ 
     .menu-card-icon {
       font-size: 2.6rem;
       margin-bottom: 10px;
@@ -289,7 +289,7 @@
       position: relative;
       z-index: 1;
     }
-
+ 
     .menu-card-title {
       font-family: 'Fredoka One', cursive;
       font-size: 1.05rem;
@@ -297,7 +297,7 @@
       position: relative;
       z-index: 1;
     }
-
+ 
     .menu-card-desc {
       font-size: .75rem;
       color: rgba(255,255,255,.7);
@@ -305,7 +305,7 @@
       position: relative;
       z-index: 1;
     }
-
+ 
     .menu-card .card-badge {
       position: absolute;
       top: 10px;
@@ -319,7 +319,7 @@
       text-transform: uppercase;
       letter-spacing: .08em;
     }
-
+ 
     /* ═══════════════════════════════════════════
        ██ SHARED SECTION STYLES
     ═══════════════════════════════════════════ */
@@ -329,27 +329,27 @@
       padding: 56px 24px 48px;
       text-align: center;
     }
-
+ 
     .section-hero h1 {
       font-family: 'Fredoka One', cursive;
       font-size: clamp(2rem, 5vw, 3.2rem);
       margin-bottom: 10px;
       letter-spacing: .02em;
     }
-
+ 
     .section-hero p {
       font-size: 1rem;
       color: rgba(255,255,255,.78);
       max-width: 560px;
       margin: 0 auto;
     }
-
+ 
     .section-body {
       max-width: 1060px;
       margin: 0 auto;
       padding: 48px 24px 60px;
     }
-
+ 
     .back-btn {
       display: inline-flex;
       align-items: center;
@@ -365,9 +365,9 @@
       margin-bottom: 32px;
       transition: all .2s;
     }
-
+ 
     .back-btn:hover { background: var(--green-glow); }
-
+ 
     /* content cards */
     .content-grid {
       display: grid;
@@ -375,7 +375,7 @@
       gap: 22px;
       margin-top: 24px;
     }
-
+ 
     .content-card {
       background: white;
       border-radius: 20px;
@@ -384,28 +384,28 @@
       border-top: 5px solid var(--green);
       transition: transform .2s;
     }
-
+ 
     .content-card:hover { transform: translateY(-4px); }
-
+ 
     .content-card .card-emoji {
       font-size: 2.4rem;
       margin-bottom: 12px;
       display: block;
     }
-
+ 
     .content-card h3 {
       font-family: 'Fredoka One', cursive;
       font-size: 1.2rem;
       color: var(--green-dark);
       margin-bottom: 10px;
     }
-
+ 
     .content-card p {
       color: var(--slate);
       font-size: .95rem;
       line-height: 1.65;
     }
-
+ 
     /* COMIC PANEL */
     .comic-panel {
       background: white;
@@ -414,7 +414,7 @@
       overflow: hidden;
       margin-bottom: 24px;
     }
-
+ 
     .comic-header {
       background: var(--green-deep);
       color: white;
@@ -425,16 +425,16 @@
       align-items: center;
       gap: 8px;
     }
-
+ 
     .comic-body {
       display: flex;
       align-items: flex-start;
       gap: 20px;
       padding: 24px;
     }
-
+ 
     .comic-mascot { flex-shrink: 0; width: 70px; }
-
+ 
     .comic-dialogue {
       background: var(--green-lite);
       border-radius: 0 18px 18px 18px;
@@ -442,7 +442,7 @@
       position: relative;
       flex: 1;
     }
-
+ 
     .comic-dialogue::before {
       content: '';
       position: absolute;
@@ -452,19 +452,19 @@
       border-right-color: var(--green-lite);
       border-left: 0;
     }
-
+ 
     .comic-dialogue p {
       color: var(--ink);
       font-size: .95rem;
       line-height: 1.6;
       font-weight: 600;
     }
-
+ 
     .comic-dialogue .highlight-word {
       color: var(--green);
       font-weight: 800;
     }
-
+ 
     /* HIGHLIGHT BOX */
     .highlight-box {
       background: linear-gradient(135deg, var(--green-lite), #ecfeff);
@@ -473,16 +473,16 @@
       padding: 28px 32px;
       margin: 28px 0;
     }
-
+ 
     .highlight-box h3 {
       font-family: 'Fredoka One', cursive;
       font-size: 1.2rem;
       color: var(--green-dark);
       margin-bottom: 10px;
     }
-
+ 
     .highlight-box p { color: var(--slate); font-size: .97rem; }
-
+ 
     /* GOLD BOX */
     .gold-box {
       background: var(--gold-lite);
@@ -491,18 +491,18 @@
       padding: 28px 32px;
       margin: 28px 0;
     }
-
+ 
     .gold-box h3 {
       font-family: 'Fredoka One', cursive;
       font-size: 1.15rem;
       color: var(--gold-dark);
       margin-bottom: 10px;
     }
-
+ 
     .gold-box p, .gold-box li { color: #7c4a00; font-size: .95rem; }
     .gold-box ul { padding-left: 18px; margin-top: 10px; }
     .gold-box li { margin-bottom: 6px; }
-
+ 
     /* SECTION TITLE */
     .s-title {
       font-family: 'Fredoka One', cursive;
@@ -510,7 +510,7 @@
       color: var(--green-dark);
       margin-bottom: 6px;
     }
-
+ 
     .s-label {
       font-size: .72rem;
       letter-spacing: .15em;
@@ -520,14 +520,14 @@
       margin-bottom: 6px;
       display: block;
     }
-
+ 
     .s-divider {
       width: 48px; height: 4px;
       background: linear-gradient(90deg, var(--green), var(--green-glow));
       border-radius: 2px;
       margin-bottom: 22px;
     }
-
+ 
     /* ═══════════════════════════════════════════
        ██ SCREEN: APRENDE (LEARN)
     ═══════════════════════════════════════════ */
@@ -547,16 +547,16 @@
       margin: 5px;
       transition: all .2s;
     }
-
+ 
     .topic-btn:hover, .topic-btn.active {
       background: var(--green);
       color: white;
       border-color: var(--green);
     }
-
+ 
     .topic-content { display: none; animation: fadeScreen .3s ease; }
     .topic-content.active { display: block; }
-
+ 
     /* ═══════════════════════════════════════════
        ██ SCREEN: ORGANIZA (BUDGET TOOL)
     ═══════════════════════════════════════════ */
@@ -567,28 +567,28 @@
       box-shadow: var(--card-shadow);
       margin-bottom: 28px;
     }
-
+ 
     .budget-tool h3 {
       font-family: 'Fredoka One', cursive;
       font-size: 1.35rem;
       color: var(--green-dark);
       margin-bottom: 20px;
     }
-
+ 
     .budget-row {
       display: flex;
       align-items: center;
       gap: 14px;
       margin-bottom: 14px;
     }
-
+ 
     .budget-row label {
       flex: 1;
       font-weight: 700;
       font-size: .92rem;
       color: var(--slate);
     }
-
+ 
     .budget-row input {
       width: 140px;
       padding: 10px 14px;
@@ -601,9 +601,9 @@
       outline: none;
       transition: border-color .2s;
     }
-
+ 
     .budget-row input:focus { border-color: var(--green); }
-
+ 
     .budget-result {
       background: var(--green-deep);
       color: white;
@@ -615,21 +615,21 @@
       flex-wrap: wrap;
       gap: 16px;
     }
-
+ 
     .budget-stat { text-align: center; }
-
+ 
     .budget-stat .stat-val {
       font-family: 'Fredoka One', cursive;
       font-size: 2rem;
       color: var(--gold);
     }
-
+ 
     .budget-stat .stat-label {
       font-size: .78rem;
       color: rgba(255,255,255,.7);
       font-weight: 700;
     }
-
+ 
     .calc-btn {
       background: var(--green);
       color: white;
@@ -644,10 +644,10 @@
       width: 100%;
       letter-spacing: .03em;
     }
-
+ 
     .calc-btn:hover { background: var(--green-dark); }
     .calc-btn:active { transform: scale(.97); }
-
+ 
     .result-bar-wrap {
       background: rgba(255,255,255,.15);
       border-radius: 50px;
@@ -655,7 +655,7 @@
       margin-top: 8px;
       overflow: hidden;
     }
-
+ 
     .result-bar {
       height: 100%;
       border-radius: 50px;
@@ -663,7 +663,7 @@
       transition: width .8s ease;
       width: 0%;
     }
-
+ 
     /* ═══════════════════════════════════════════
        ██ SCREEN: ZONA INTERACTIVA
     ═══════════════════════════════════════════ */
@@ -676,7 +676,7 @@
       position: relative;
       overflow: hidden;
     }
-
+ 
     .challenge-card::before {
       content: '';
       position: absolute;
@@ -684,7 +684,7 @@
       height: 5px;
       background: var(--c-color, var(--green));
     }
-
+ 
     .challenge-tag {
       display: inline-block;
       background: var(--green-lite);
@@ -697,16 +697,16 @@
       border-radius: 50px;
       margin-bottom: 12px;
     }
-
+ 
     .challenge-card h3 {
       font-family: 'Fredoka One', cursive;
       font-size: 1.2rem;
       color: var(--ink);
       margin-bottom: 8px;
     }
-
+ 
     .challenge-card p { color: var(--slate); font-size: .93rem; }
-
+ 
     /* QUIZ */
     .quiz-box {
       background: white;
@@ -714,14 +714,14 @@
       padding: 32px;
       box-shadow: var(--card-shadow);
     }
-
+ 
     .quiz-box h3 {
       font-family: 'Fredoka One', cursive;
       font-size: 1.3rem;
       color: var(--green-dark);
       margin-bottom: 20px;
     }
-
+ 
     .quiz-question {
       font-size: 1.05rem;
       font-weight: 700;
@@ -729,9 +729,9 @@
       margin-bottom: 18px;
       line-height: 1.5;
     }
-
+ 
     .quiz-options { display: grid; gap: 10px; }
-
+ 
     .quiz-opt {
       background: var(--cream);
       border: 2px solid #e2e8f0;
@@ -745,11 +745,11 @@
       text-align: left;
       transition: all .2s;
     }
-
+ 
     .quiz-opt:hover { border-color: var(--green); background: var(--green-lite); }
     .quiz-opt.correct { background: #dcfce7; border-color: #16a34a; color: #14532d; }
     .quiz-opt.wrong   { background: #fee2e2; border-color: #dc2626; color: #7f1d1d; }
-
+ 
     .quiz-feedback {
       margin-top: 16px;
       padding: 14px 18px;
@@ -758,11 +758,11 @@
       font-size: .93rem;
       display: none;
     }
-
+ 
     .quiz-feedback.show { display: block; animation: fadeScreen .3s ease; }
     .quiz-feedback.good { background: #dcfce7; color: #14532d; }
     .quiz-feedback.bad  { background: #fee2e2; color: #7f1d1d; }
-
+ 
     .quiz-next {
       background: var(--green);
       color: white;
@@ -776,10 +776,10 @@
       display: none;
       transition: background .2s;
     }
-
+ 
     .quiz-next.show { display: inline-block; }
     .quiz-next:hover { background: var(--green-dark); }
-
+ 
     /* ═══════════════════════════════════════════
        ██ SCREEN: ESCAPE ROOM ENTRY
     ═══════════════════════════════════════════ */
@@ -795,7 +795,7 @@
       position: relative;
       overflow: hidden;
     }
-
+ 
     .escape-hero::before {
       content: '';
       position: absolute;
@@ -804,25 +804,25 @@
                         radial-gradient(circle at 80% 70%, rgba(245,158,11,.15) 0%, transparent 50%);
       pointer-events: none;
     }
-
+ 
     .stars-bg {
       position: absolute;
       inset: 0;
       pointer-events: none;
     }
-
+ 
     .star {
       position: absolute;
       background: white;
       border-radius: 50%;
       animation: twinkle ease-in-out infinite;
     }
-
+ 
     @keyframes twinkle {
       0%, 100% { opacity: .2; }
       50%       { opacity: .9; }
     }
-
+ 
     .escape-badge {
       display: inline-block;
       background: rgba(245,158,11,.2);
@@ -836,7 +836,7 @@
       border-radius: 50px;
       margin-bottom: 22px;
     }
-
+ 
     .escape-hero h1 {
       font-family: 'Fredoka One', cursive;
       font-size: clamp(2.2rem, 6vw, 4rem);
@@ -844,9 +844,9 @@
       line-height: 1.1;
       margin-bottom: 10px;
     }
-
+ 
     .escape-hero h1 .gold { color: var(--gold); }
-
+ 
     .escape-hero p {
       color: rgba(255,255,255,.75);
       font-size: 1.05rem;
@@ -854,7 +854,7 @@
       margin: 0 auto 36px;
       line-height: 1.65;
     }
-
+ 
     .escape-start-btn {
       background: linear-gradient(135deg, var(--gold), #f97316);
       color: white;
@@ -868,12 +868,12 @@
       transition: all .25s cubic-bezier(.34,1.56,.64,1);
       letter-spacing: .04em;
     }
-
+ 
     .escape-start-btn:hover {
       transform: translateY(-4px) scale(1.05);
       box-shadow: 0 14px 40px rgba(245,158,11,.55);
     }
-
+ 
     .escape-info-grid {
       display: flex;
       gap: 20px;
@@ -881,7 +881,7 @@
       justify-content: center;
       margin-top: 40px;
     }
-
+ 
     .escape-info-item {
       background: rgba(255,255,255,.1);
       border: 1px solid rgba(255,255,255,.2);
@@ -891,19 +891,19 @@
       text-align: center;
       min-width: 130px;
     }
-
+ 
     .escape-info-item .eii-val {
       font-family: 'Fredoka One', cursive;
       font-size: 1.5rem;
       color: var(--gold);
     }
-
+ 
     .escape-info-item .eii-label {
       font-size: .75rem;
       color: rgba(255,255,255,.65);
       font-weight: 700;
     }
-
+ 
     /* ═══════════════════════════════════════════
        ██ SCREEN: RECURSOS
     ═══════════════════════════════════════════ */
@@ -918,9 +918,9 @@
       margin-bottom: 16px;
       transition: transform .2s;
     }
-
+ 
     .resource-card:hover { transform: translateX(6px); }
-
+ 
     .resource-icon {
       width: 54px; height: 54px;
       border-radius: 14px;
@@ -928,16 +928,16 @@
       font-size: 1.6rem;
       flex-shrink: 0;
     }
-
+ 
     .resource-card h3 {
       font-family: 'Fredoka One', cursive;
       font-size: 1.05rem;
       color: var(--green-dark);
       margin-bottom: 5px;
     }
-
+ 
     .resource-card p { color: var(--slate); font-size: .9rem; }
-
+ 
     .resource-link {
       display: inline-block;
       margin-top: 10px;
@@ -948,9 +948,9 @@
       border-bottom: 2px solid transparent;
       transition: border-color .2s;
     }
-
+ 
     .resource-link:hover { border-color: var(--green); }
-
+ 
     /* ═══════════════════════════════════════════
        FOOTER
     ═══════════════════════════════════════════ */
@@ -961,9 +961,9 @@
       padding: 28px 20px;
       font-size: .84rem;
     }
-
+ 
     footer span { color: var(--green-glow); font-weight: 700; }
-
+ 
     /* ═══════════════════════════════════════════
        RESPONSIVE
     ═══════════════════════════════════════════ */
@@ -976,7 +976,7 @@
   </style>
 </head>
 <body>
-
+ 
 <!-- ═══════════════════════════════ NAVBAR ═══ -->
 <nav class="navbar">
   <div class="nav-brand" onclick="goTo('home')">
@@ -997,9 +997,9 @@
     <button class="nav-btn"        id="nav-recursos"    onclick="goTo('recursos')">Recursos</button>
   </div>
 </nav>
-
+ 
 <div class="page">
-
+ 
 <!-- ════════════════════════════════════════════
      SCREEN: HOME
 ════════════════════════════════════════════ -->
@@ -1007,7 +1007,7 @@
   <div class="hero">
     <!-- floating coins -->
     <div class="coins-bg" id="coinsBg"></div>
-
+ 
     <!-- mascot -->
     <div class="mascot-wrap">
       <svg class="mascot-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1048,11 +1048,11 @@
       </svg>
       <div class="speech-bubble">¡Hola! Soy <b>Monedín</b> 👋<br>¡Aprende a cuidar tu dinero!</div>
     </div>
-
+ 
     <span class="hero-badge">CBTIS 76 · Proyecto Educativo</span>
     <h1>Control y <span class="accent">Ahorro</span></h1>
     <p class="hero-sub">Tu guía interactiva para aprender a manejar tu dinero y tomar mejores decisiones financieras.</p>
-
+ 
     <!-- MAIN MENU CARDS -->
     <div class="menu-grid">
       <div class="menu-card" style="--card-color:#0f766e" onclick="goTo('aprende')">
@@ -1084,7 +1084,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- ════════════════════════════════════════════
      SCREEN: APRENDE
 ════════════════════════════════════════════ -->
@@ -1095,7 +1095,7 @@
   </div>
   <div class="section-body">
     <button class="back-btn" onclick="goTo('home')">← Regresar al inicio</button>
-
+ 
     <!-- topic tabs -->
     <div style="margin-bottom:28px;">
       <button class="topic-btn active" onclick="showTopic('ingresos', this)">💰 Ingresos y Gastos</button>
@@ -1103,7 +1103,7 @@
       <button class="topic-btn" onclick="showTopic('hormiga', this)">🐜 Gasto Hormiga</button>
       <button class="topic-btn" onclick="showTopic('ahorro', this)">🏦 Metas de Ahorro</button>
     </div>
-
+ 
     <!-- TOPIC: INGRESOS -->
     <div id="topic-ingresos" class="topic-content active">
       <div class="comic-panel">
@@ -1115,7 +1115,7 @@
           </div>
         </div>
       </div>
-
+ 
       <div class="content-grid">
         <div class="content-card">
           <span class="card-emoji">💵</span>
@@ -1133,13 +1133,13 @@
           <p>Tu meta es que al final del mes te sobre dinero. Si gastas más de lo que ganas, entras en desequilibrio. Si te sobra, ¡ese dinero puede ir al ahorro!</p>
         </div>
       </div>
-
+ 
       <div class="gold-box">
         <h3>💡 Dato importante</h3>
         <p>Según estudios, el 70% de los jóvenes en México no lleva registro de sus gastos. ¡Solo con anotarlos puedes mejorar tus hábitos financieros!</p>
       </div>
     </div>
-
+ 
     <!-- TOPIC: PRESUPUESTO -->
     <div id="topic-presupuesto" class="topic-content">
       <div class="comic-panel">
@@ -1151,7 +1151,7 @@
           </div>
         </div>
       </div>
-
+ 
       <div class="content-grid">
         <div class="content-card">
           <span class="card-emoji">📝</span>
@@ -1170,7 +1170,7 @@
         </div>
       </div>
     </div>
-
+ 
     <!-- TOPIC: GASTO HORMIGA -->
     <div id="topic-hormiga" class="topic-content">
       <div class="comic-panel">
@@ -1182,12 +1182,12 @@
           </div>
         </div>
       </div>
-
+ 
       <div class="highlight-box">
         <h3>🐜 ¿Qué es el gasto hormiga?</h3>
         <p>Son pequeños gastos diarios que parecen inofensivos: un refresco ($20), una bolsita de papas ($15), un café ($30)... pero sumados al mes pueden ser <b>más de $1,000 pesos</b> que se van sin que lo notes.</p>
       </div>
-
+ 
       <div class="content-grid">
         <div class="content-card" style="border-top-color:#ef4444">
           <span class="card-emoji">📱</span>
@@ -1201,7 +1201,7 @@
         </div>
       </div>
     </div>
-
+ 
     <!-- TOPIC: AHORRO -->
     <div id="topic-ahorro" class="topic-content">
       <div class="comic-panel">
@@ -1213,7 +1213,7 @@
           </div>
         </div>
       </div>
-
+ 
       <div class="content-grid">
         <div class="content-card">
           <span class="card-emoji">🎯</span>
@@ -1232,11 +1232,11 @@
         </div>
       </div>
     </div>
-
+ 
   </div>
   <footer><p>Control y Ahorro · <span>CBTIS 76</span> · Con Monedín 🪙</p></footer>
 </div>
-
+ 
 <!-- ════════════════════════════════════════════
      SCREEN: ORGANIZA (BUDGET CALCULATOR)
 ════════════════════════════════════════════ -->
@@ -1247,7 +1247,7 @@
   </div>
   <div class="section-body">
     <button class="back-btn" onclick="goTo('home')">← Regresar al inicio</button>
-
+ 
     <div class="comic-panel" style="margin-bottom:28px;">
       <div class="comic-header">💬 Consejo de Monedín</div>
       <div class="comic-body">
@@ -1257,10 +1257,10 @@
         </div>
       </div>
     </div>
-
+ 
     <div class="budget-tool">
       <h3>💰 Calculadora de Presupuesto Semanal</h3>
-
+ 
       <div class="budget-row">
         <label>💵 Ingresos semanales (mesada, trabajo, etc.)</label>
         <input type="number" id="b-ingreso" placeholder="$0.00" min="0">
@@ -1289,9 +1289,9 @@
         <label>🛍️ Otros gastos</label>
         <input type="number" id="b-otros" placeholder="$0.00" min="0">
       </div>
-
+ 
       <button class="calc-btn" onclick="calcBudget()">📊 Calcular mi presupuesto</button>
-
+ 
       <div class="budget-result" id="budgetResult" style="display:none;">
         <div class="budget-stat">
           <div class="stat-val" id="res-ingreso">$0</div>
@@ -1311,9 +1311,9 @@
         </div>
       </div>
     </div>
-
+ 
     <div id="budget-feedback" style="display:none;"></div>
-
+ 
     <div class="gold-box">
       <h3>💡 La regla 50-30-20</h3>
       <ul>
@@ -1325,7 +1325,7 @@
   </div>
   <footer><p>Control y Ahorro · <span>CBTIS 76</span> · Con Monedín 🪙</p></footer>
 </div>
-
+ 
 <!-- ════════════════════════════════════════════
      SCREEN: ZONA INTERACTIVA
 ════════════════════════════════════════════ -->
@@ -1336,12 +1336,12 @@
   </div>
   <div class="section-body">
     <button class="back-btn" onclick="goTo('home')">← Regresar al inicio</button>
-
+ 
     <!-- QUIZ -->
     <span class="s-label">Actividad 1</span>
     <h2 class="s-title">🧠 Quiz Financiero</h2>
     <div class="s-divider"></div>
-
+ 
     <div class="quiz-box" id="quizBox">
       <h3>¿Cuánto sabes sobre finanzas? ¡Responde!</h3>
       <div class="quiz-question" id="quizQ"></div>
@@ -1349,13 +1349,13 @@
       <div class="quiz-feedback" id="quizFB"></div>
       <button class="quiz-next" id="quizNext" onclick="nextQuestion()">Siguiente pregunta →</button>
     </div>
-
+ 
     <!-- RETOS DE AHORRO -->
     <div style="margin-top:48px;">
       <span class="s-label">Actividad 2</span>
       <h2 class="s-title">🏆 Retos de Ahorro</h2>
       <div class="s-divider"></div>
-
+ 
       <div class="challenge-card" style="--c-color:#0f766e">
         <span class="challenge-tag">Nivel Fácil</span>
         <h3>Reto 7 días sin gasto hormiga</h3>
@@ -1372,13 +1372,13 @@
         <p>Elige una meta: unos audífonos, un juego, lo que quieras. Calcula cuánto debes ahorrar cada día para lograrlo en un mes. ¡Lleva un registro diario!</p>
       </div>
     </div>
-
+ 
     <!-- CASO PRÁCTICO -->
     <div style="margin-top:48px;">
       <span class="s-label">Actividad 3</span>
       <h2 class="s-title">📖 Caso Práctico</h2>
       <div class="s-divider"></div>
-
+ 
       <div class="comic-panel">
         <div class="comic-header">📚 El caso de Sofía</div>
         <div class="comic-body">
@@ -1388,7 +1388,7 @@
           </div>
         </div>
       </div>
-
+ 
       <div class="content-grid" style="margin-top:0">
         <div class="content-card">
           <span class="card-emoji">🤔</span>
@@ -1402,11 +1402,11 @@
         </div>
       </div>
     </div>
-
+ 
   </div>
   <footer><p>Control y Ahorro · <span>CBTIS 76</span> · Con Monedín 🪙</p></footer>
 </div>
-
+ 
 <!-- ════════════════════════════════════════════
      SCREEN: ESCAPE ROOM ENTRY
 ════════════════════════════════════════════ -->
@@ -1439,7 +1439,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- ════════════════════════════════════════════
      SCREEN: RECURSOS
 ════════════════════════════════════════════ -->
@@ -1450,11 +1450,11 @@
   </div>
   <div class="section-body">
     <button class="back-btn" onclick="goTo('home')">← Regresar al inicio</button>
-
+ 
     <span class="s-label">Consejos rápidos</span>
     <h2 class="s-title">💡 Tips de Monedín</h2>
     <div class="s-divider"></div>
-
+ 
     <div class="comic-panel" style="margin-bottom:32px;">
       <div class="comic-header">🪙 Monedín comparte sus mejores consejos</div>
       <div class="comic-body">
@@ -1464,7 +1464,7 @@
         </div>
       </div>
     </div>
-
+ 
     <div class="resource-card">
       <div class="resource-icon" style="background:#dcfce7;">💳</div>
       <div>
@@ -1495,7 +1495,7 @@
         <p>La Organización para la Cooperación y el Desarrollo Económicos publicó un informe sobre la educación financiera de jóvenes en México y el mundo.</p>
       </div>
     </div>
-
+ 
     <div class="highlight-box" style="margin-top:36px;">
       <h3>📌 Los 5 hábitos de un joven con finanzas sanas</h3>
       <ul style="padding-left:18px;margin-top:10px;color:var(--slate)">
@@ -1509,9 +1509,9 @@
   </div>
   <footer><p>Control y Ahorro · <span>CBTIS 76</span> · Con Monedín 🪙</p></footer>
 </div>
-
+ 
 </div><!-- end .page -->
-
+ 
 <script>
 // ═══════════════════════════════════════
 // SCREEN NAVIGATION
@@ -1519,23 +1519,23 @@
 function goTo(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-
+ 
   const screen = document.getElementById('screen-' + id);
   if (screen) {
     screen.classList.add('active');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
-
+ 
   const navBtn = document.getElementById('nav-' + id);
   if (navBtn) navBtn.classList.add('active');
-
+ 
   // special: escape-room goes to escape screen
   if (id === 'escape-room') {
     document.getElementById('screen-escape').classList.remove('active');
     loadEscapeRoom();
   }
 }
-
+ 
 // ═══════════════════════════════════════
 // FLOATING COINS (HOME)
 // ═══════════════════════════════════════
@@ -1551,7 +1551,7 @@ for (let i = 0; i < 18; i++) {
   c.style.fontSize = (1.2 + Math.random() * 1.6) + 'rem';
   coinsBg.appendChild(c);
 }
-
+ 
 // ═══════════════════════════════════════
 // STARS (ESCAPE ENTRY)
 // ═══════════════════════════════════════
@@ -1563,7 +1563,7 @@ for (let i = 0; i < 60; i++) {
   s.style.cssText = `width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s`;
   starsBg.appendChild(s);
 }
-
+ 
 // ═══════════════════════════════════════
 // TOPIC TABS (APRENDE)
 // ═══════════════════════════════════════
@@ -1573,7 +1573,7 @@ function showTopic(id, btn) {
   document.getElementById('topic-' + id).classList.add('active');
   btn.classList.add('active');
 }
-
+ 
 // ═══════════════════════════════════════
 // BUDGET CALCULATOR
 // ═══════════════════════════════════════
@@ -1581,10 +1581,10 @@ function calcBudget() {
   const ingreso = parseFloat(document.getElementById('b-ingreso').value) || 0;
   const gastos = ['b-comida','b-transporte','b-escolar','b-entrete','b-hormiga','b-otros']
     .reduce((sum, id) => sum + (parseFloat(document.getElementById(id).value) || 0), 0);
-
+ 
   const saldo = ingreso - gastos;
   const pct = ingreso > 0 ? Math.min((gastos / ingreso) * 100, 100) : 0;
-
+ 
   document.getElementById('res-ingreso').textContent = '$' + ingreso.toFixed(0);
   document.getElementById('res-gastos').textContent = '$' + gastos.toFixed(0);
   document.getElementById('res-ahorro').textContent = (saldo >= 0 ? '+' : '') + '$' + saldo.toFixed(0);
@@ -1594,7 +1594,7 @@ function calcBudget() {
     document.getElementById('res-bar').style.width = pct + '%';
     document.getElementById('res-bar').style.background = pct > 80 ? '#ef4444' : pct > 60 ? '#f59e0b' : '#4ade80';
   }, 100);
-
+ 
   const fb = document.getElementById('budget-feedback');
   fb.style.display = 'block';
   if (saldo < 0) {
@@ -1605,7 +1605,7 @@ function calcBudget() {
     fb.innerHTML = `<div class="highlight-box" style="border-color:#16a34a;background:linear-gradient(135deg,#dcfce7,#f0fdf4)"><h3 style="color:#14532d">🎉 ¡Excelente! Tu presupuesto está bien organizado</h3><p style="color:#166534">Estás ahorrando <b>$${saldo.toFixed(0)}</b>, que representa el ${(saldo/ingreso*100).toFixed(0)}% de tus ingresos. ¡Monedín está orgulloso de ti! 🏆</p></div>`;
   }
 }
-
+ 
 // ═══════════════════════════════════════
 // QUIZ
 // ═══════════════════════════════════════
@@ -1641,10 +1641,10 @@ const quizData = [
     feedback: "¡Exactamente! 'Págarte a ti primero' es el secreto de los buenos ahorradores. 🌟"
   }
 ];
-
+ 
 let currentQ = 0;
 let answered = false;
-
+ 
 function renderQuiz() {
   const data = quizData[currentQ];
   document.getElementById('quizQ').textContent = `Pregunta ${currentQ + 1} de ${quizData.length}: ${data.q}`;
@@ -1662,7 +1662,7 @@ function renderQuiz() {
   document.getElementById('quizNext').className = 'quiz-next';
   answered = false;
 }
-
+ 
 function answerQuiz(idx) {
   if (answered) return;
   answered = true;
@@ -1670,17 +1670,17 @@ function answerQuiz(idx) {
   const opts = document.querySelectorAll('.quiz-opt');
   opts[idx].classList.add(idx === data.correct ? 'correct' : 'wrong');
   if (idx !== data.correct) opts[data.correct].classList.add('correct');
-
+ 
   const fb = document.getElementById('quizFB');
   fb.textContent = (idx === data.correct ? '✅ ' : '❌ ') + data.feedback;
   fb.className = 'quiz-feedback show ' + (idx === data.correct ? 'good' : 'bad');
-
+ 
   document.getElementById('quizNext').className = 'quiz-next show';
   if (currentQ === quizData.length - 1) {
     document.getElementById('quizNext').textContent = '🏆 Ver resultado final';
   }
 }
-
+ 
 function nextQuestion() {
   currentQ++;
   if (currentQ >= quizData.length) {
@@ -1695,9 +1695,9 @@ function nextQuestion() {
   }
   renderQuiz();
 }
-
+ 
 renderQuiz();
-
+ 
 // ═══════════════════════════════════════
 // ESCAPE ROOM PLACEHOLDER LOADER
 // ═══════════════════════════════════════
@@ -1725,3 +1725,4 @@ function loadEscapeRoom() {
 </script>
 </body>
 </html>
+ 
