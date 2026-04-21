@@ -3,307 +3,596 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Control y Ahorro</title>
+  <title>Control y Ahorro – Protocolo de Proyecto | CBTIS 76</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      scroll-behavior: smooth;
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --teal:       #0f766e;
+      --teal-dark:  #134e4a;
+      --teal-light: #99f6e4;
+      --teal-pale:  #ccfbf1;
+      --cream:      #f7fafc;
+      --ink:        #1f2937;
+      --muted:      #4b5563;
+      --border:     #e5e7eb;
+      --gold:       #d97706;
+      --gold-bg:    #fffbeb;
     }
+
+    html { scroll-behavior: smooth; }
 
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f7fafc;
-      color: #1f2937;
-      line-height: 1.6;
+      font-family: 'Outfit', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      line-height: 1.7;
     }
 
+    /* HEADER */
     header {
       background: linear-gradient(135deg, #0f766e, #134e4a);
       color: white;
-      padding: 80px 20px 100px;
+      padding: 90px 20px 110px;
       text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 80% at 80% 20%, rgba(153,246,228,.12) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.3);
+      color: var(--teal-light);
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      padding: 6px 18px;
+      border-radius: 50px;
+      margin-bottom: 24px;
     }
 
     header h1 {
-      font-size: 3.2rem;
-      margin-bottom: 15px;
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.4rem, 5.5vw, 4rem);
+      font-weight: 800;
+      margin-bottom: 16px;
+      line-height: 1.15;
     }
+
+    header h1 span { color: var(--teal-light); }
 
     header p {
-      font-size: 1.3rem;
-      max-width: 700px;
-      margin: auto;
-      margin-bottom: 30px;
+      font-size: 1.15rem;
+      color: rgba(255,255,255,.78);
+      max-width: 640px;
+      margin: 0 auto 36px;
     }
 
-    .hero-buttons a {
+    .hero-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
+
+    .btn {
       display: inline-block;
-      margin: 10px;
-      padding: 14px 26px;
+      padding: 13px 28px;
       border-radius: 10px;
       text-decoration: none;
-      font-weight: bold;
-      transition: 0.3s ease;
+      font-weight: 600;
+      font-size: .92rem;
+      transition: all .25s;
     }
 
-    .btn-primary {
-      background: white;
-      color: #0f766e;
-    }
+    .btn-primary { background: white; color: var(--teal-dark); }
+    .btn-primary:hover { background: var(--teal-pale); }
+    .btn-outline { border: 2px solid rgba(255,255,255,.55); color: white; }
+    .btn-outline:hover { background: rgba(255,255,255,.12); border-color: white; }
 
-    .btn-primary:hover {
-      background: #e6fffb;
-    }
-
-    .btn-secondary {
-      border: 2px solid white;
-      color: white;
-    }
-
-    .btn-secondary:hover {
-      background: rgba(255,255,255,0.15);
-    }
-
+    /* NAV */
     nav {
       position: sticky;
       top: 0;
+      z-index: 900;
       background: white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      z-index: 1000;
-      padding: 15px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.07);
+      padding: 14px 20px;
       text-align: center;
     }
 
     nav a {
       text-decoration: none;
-      color: #134e4a;
+      color: var(--teal-dark);
       font-weight: 600;
-      margin: 0 12px;
-      font-size: 0.95rem;
+      font-size: .83rem;
+      letter-spacing: .03em;
+      margin: 0 10px;
+      padding-bottom: 2px;
+      border-bottom: 2px solid transparent;
+      transition: all .2s;
     }
 
+    nav a:hover { color: var(--teal); border-bottom-color: var(--teal); }
+
+    /* SECTIONS */
     section {
-      max-width: 1100px;
-      margin: auto;
-      padding: 70px 20px;
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 76px 24px;
     }
 
-    .section-title {
-      font-size: 2rem;
-      color: #134e4a;
-      margin-bottom: 20px;
-      text-align: center;
+    .section-label {
+      display: inline-block;
+      font-size: .72rem;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--teal);
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    h2.section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.7rem, 3.5vw, 2.4rem);
+      color: var(--teal-dark);
+      margin-bottom: 12px;
+    }
+
+    .divider {
+      width: 52px; height: 3px;
+      background: linear-gradient(90deg, var(--teal), var(--teal-light));
+      border-radius: 2px;
+      margin-bottom: 24px;
     }
 
     .section-text {
-      text-align: center;
-      max-width: 750px;
-      margin: 0 auto 40px;
-      color: #4b5563;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 1rem;
+      margin-bottom: 36px;
     }
 
+    /* CARDS */
     .cards {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
       gap: 20px;
     }
 
     .card {
       background: white;
       border-radius: 16px;
-      padding: 25px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-      transition: transform 0.2s ease;
+      padding: 26px 22px;
+      box-shadow: 0 5px 18px rgba(0,0,0,.07);
+      border-top: 4px solid var(--teal);
+      transition: transform .2s, box-shadow .2s;
     }
 
-    .card:hover {
-      transform: translateY(-5px);
-    }
+    .card:hover { transform: translateY(-5px); box-shadow: 0 12px 32px rgba(15,118,110,.14); }
+    .card-icon { font-size: 2rem; margin-bottom: 10px; }
+    .card h3 { color: var(--teal-dark); margin-bottom: 10px; font-size: 1.05rem; font-weight: 600; }
+    .card p { color: var(--muted); font-size: .93rem; }
 
-    .card h3 {
-      color: #0f766e;
-      margin-bottom: 12px;
-    }
-
+    /* HIGHLIGHT */
     .highlight {
-      background: linear-gradient(135deg, #ccfbf1, #ecfeff);
-      border-left: 6px solid #0f766e;
-      padding: 30px;
+      background: linear-gradient(135deg, var(--teal-pale), #ecfeff);
+      border-left: 6px solid var(--teal);
+      border-radius: 16px;
+      padding: 30px 34px;
+      margin-top: 24px;
+    }
+    .highlight h3 { color: var(--teal-dark); margin-bottom: 10px; font-size: 1.1rem; }
+    .highlight p, .highlight li { color: var(--muted); font-size: .97rem; }
+    .highlight ul { padding-left: 18px; margin-top: 10px; }
+    .highlight li { margin-bottom: 6px; }
+
+    /* HYPOTHESIS */
+    .hypothesis-box {
+      background: var(--gold-bg);
+      border: 1.5px solid #fcd34d;
+      border-radius: 16px;
+      padding: 34px 38px;
+      margin-top: 24px;
+    }
+    .hypothesis-box h3 { color: var(--gold); margin-bottom: 12px; font-size: 1.1rem; }
+    .hypothesis-box p { color: #78350f; font-size: 1rem; }
+
+    /* PROBLEM BOX */
+    .problem-box {
+      background: var(--teal-dark);
+      color: white;
       border-radius: 18px;
-      margin-top: 25px;
+      padding: 40px 44px;
+      margin-top: 24px;
+    }
+    .problem-box h3 { font-family: 'Playfair Display', serif; font-size: 1.3rem; margin-bottom: 14px; color: var(--teal-light); }
+    .problem-box p { color: rgba(255,255,255,.8); font-size: 1.02rem; line-height: 1.8; }
+
+    /* OBJECTIVES LIST */
+    .obj-list { list-style: none; padding: 0; margin-top: 28px; }
+    .obj-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      background: white;
+      border-radius: 12px;
+      padding: 20px 22px;
+      margin-bottom: 14px;
+      box-shadow: 0 3px 12px rgba(0,0,0,.06);
+      font-size: .97rem;
+      color: var(--muted);
+    }
+    .obj-list .num {
+      flex-shrink: 0;
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: var(--teal-pale);
+      color: var(--teal-dark);
+      font-weight: 700;
+      font-size: .85rem;
+      display: flex; align-items: center; justify-content: center;
     }
 
+    /* INDEX GRID */
+    .index-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 28px;
+    }
+
+    .chapter {
+      background: white;
+      border-radius: 14px;
+      padding: 26px 22px;
+      box-shadow: 0 3px 14px rgba(0,0,0,.07);
+      border-bottom: 3px solid var(--teal);
+    }
+    .chapter-tag { font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: var(--teal); font-weight: 700; margin-bottom: 6px; }
+    .chapter h3 { color: var(--teal-dark); font-size: .98rem; margin-bottom: 12px; line-height: 1.4; }
+    .chapter ul { list-style: none; padding: 0; }
+    .chapter li { font-size: .87rem; color: var(--muted); padding: 4px 0 4px 12px; border-left: 2px solid var(--teal-light); margin-bottom: 5px; }
+
+    /* TABLE */
+    .table-wrap { overflow-x: auto; border-radius: 14px; border: 1px solid var(--border); margin-top: 28px; }
+    table { width: 100%; border-collapse: collapse; font-size: .87rem; min-width: 600px; }
+    thead { background: var(--teal-dark); color: white; }
+    thead th { padding: 13px 14px; font-weight: 600; text-align: left; }
+    tbody tr:nth-child(even) { background: #f0fdf9; }
+    tbody tr:hover { background: var(--teal-pale); }
+    tbody td { padding: 12px 14px; color: var(--muted); border-bottom: 1px solid var(--border); }
+    tbody td:first-child { color: var(--ink); font-weight: 600; }
+    .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: var(--teal); }
+
+    /* BIB */
+    .bib-list { list-style: none; padding: 0; margin-top: 28px; }
+    .bib-list li {
+      background: white;
+      border-left: 4px solid var(--teal);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.05);
+      font-size: .95rem;
+      color: var(--muted);
+      line-height: 1.7;
+      transition: border-color .2s;
+    }
+    .bib-list li:hover { border-color: var(--gold); }
+
+    /* CTA */
     .cta-box {
-      background: #134e4a;
+      background: var(--teal-dark);
       color: white;
       border-radius: 20px;
-      padding: 40px;
+      padding: 46px 44px;
       text-align: center;
-      margin-top: 40px;
+      margin-top: 44px;
     }
-
+    .cta-box h2 { font-family: 'Playfair Display', serif; font-size: 1.85rem; margin-bottom: 12px; }
+    .cta-box p { color: rgba(255,255,255,.7); max-width: 540px; margin: 0 auto 28px; }
     .cta-box a {
       display: inline-block;
-      margin-top: 20px;
       background: white;
-      color: #134e4a;
-      padding: 14px 24px;
-      text-decoration: none;
+      color: var(--teal-dark);
+      padding: 13px 26px;
       border-radius: 10px;
-      font-weight: bold;
+      text-decoration: none;
+      font-weight: 700;
+      margin: 6px;
+      transition: background .2s;
     }
+    .cta-box a:hover { background: var(--teal-pale); }
 
+    /* BG ALT */
+    .bg-alt { background: #edf7f6; }
+    .bg-alt section { padding: 76px 24px; }
+
+    /* FOOTER */
     footer {
       background: #0f172a;
-      color: white;
+      color: rgba(255,255,255,.5);
       text-align: center;
       padding: 30px 20px;
-      margin-top: 50px;
+      font-size: .84rem;
+      margin-top: 60px;
     }
+    footer span { color: var(--teal-light); }
 
     @media (max-width: 768px) {
-      header h1 {
-        font-size: 2.4rem;
-      }
-
-      header p {
-        font-size: 1.1rem;
-      }
-
-      nav a {
-        display: inline-block;
-        margin: 8px;
-      }
+      header { padding: 70px 20px 90px; }
+      nav a { margin: 5px 7px; font-size: .78rem; }
+      .problem-box, .cta-box { padding: 30px 22px; }
+      .hypothesis-box { padding: 26px 22px; }
     }
   </style>
 </head>
 <body>
 
-  <header id="inicio">
-    <h1>Control y Ahorro</h1>
-    <p>Tu dinero, tus decisiones, tu futuro.</p>
-    <div class="hero-buttons">
-      <a href="#aprende" class="btn-primary">Comenzar</a>
-      <a href="#escape-room" class="btn-secondary">Explorar Escape Room</a>
+<header id="inicio">
+  <span class="badge">CBTIS 76 · Proyecto Educativo</span>
+  <h1>Control y <span>Ahorro</span></h1>
+  <p>Protocolo de proyecto educativo sobre finanzas personales para estudiantes del CBTIS 76.</p>
+  <div class="hero-buttons">
+    <a href="#justificacion" class="btn btn-primary">Ver protocolo</a>
+    <a href="#escape-room" class="btn btn-outline">Escape Room Financiero</a>
+  </div>
+</header>
+
+<nav>
+  <a href="#inicio">Inicio</a>
+  <a href="#justificacion">Justificación</a>
+  <a href="#problema">Problema</a>
+  <a href="#objetivos">Objetivos</a>
+  <a href="#hipotesis">Hipótesis</a>
+  <a href="#metodologia">Metodología</a>
+  <a href="#indice">Índice</a>
+  <a href="#cronograma">Cronograma</a>
+  <a href="#bibliografia">Bibliografía</a>
+</nav>
+
+<!-- 01 JUSTIFICACIÓN -->
+<section id="justificacion">
+  <span class="section-label">01 · Justificación</span>
+  <h2 class="section-title">¿Por qué este proyecto?</h2>
+  <div class="divider"></div>
+  <p class="section-text">
+    Los estudiantes de bachillerato enfrentan decisiones financieras cotidianas sin contar con las herramientas
+    necesarias para tomarlas de forma responsable. Este proyecto busca cubrir esa brecha mediante recursos
+    didácticos digitales accesibles y dinámicos.
+  </p>
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">💸</div>
+      <h3>Gasto sin planeación</h3>
+      <p>Muchos jóvenes gastan sus ingresos sin registrarlos ni organizarlos, lo que impide desarrollar hábitos financieros saludables.</p>
     </div>
-  </header>
+    <div class="card">
+      <div class="card-icon">📚</div>
+      <h3>Falta de educación financiera</h3>
+      <p>La educación financiera no forma parte explícita del currículo de bachillerato, dejando un vacío importante en la formación de los estudiantes.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🎯</div>
+      <h3>Recursos didácticos digitales</h3>
+      <p>Las herramientas digitales interactivas representan una oportunidad para enseñar finanzas de forma motivadora y efectiva en el aula.</p>
+    </div>
+  </div>
+</section>
 
-  <nav>
-    <a href="#inicio">Inicio</a>
-    <a href="#aprende">Aprende</a>
-    <a href="#organiza">Organiza tu dinero</a>
-    <a href="#interactiva">Zona interactiva</a>
-    <a href="#escape-room">Escape Room</a>
-    <a href="#recursos">Recursos</a>
-  </nav>
-
-  <section id="aprende">
-    <h2 class="section-title">Aprende sobre tus finanzas</h2>
-    <p class="section-text">
-      Este sitio está diseñado para apoyar a estudiantes en el aprendizaje de las finanzas personales,
-      el ahorro, la organización del dinero y la toma de decisiones responsables.
+<!-- 02 PROBLEMA -->
+<div class="bg-alt">
+<section id="problema">
+  <span class="section-label">02 · Planteamiento del Problema</span>
+  <h2 class="section-title">Pregunta de investigación</h2>
+  <div class="divider"></div>
+  <div class="problem-box">
+    <h3>Pregunta central</h3>
+    <p>
+      ¿De qué manera el uso de recursos didácticos digitales —como un sitio web interactivo con una actividad
+      de escape room financiero— contribuye al desarrollo de competencias de ahorro, presupuesto y toma de
+      decisiones económicas responsables en los estudiantes del CBTIS 76?
     </p>
+  </div>
+</section>
+</div>
 
-    <div class="cards">
-      <div class="card">
-        <h3>Ingresos y gastos</h3>
-        <p>Aprende a identificar de dónde viene tu dinero y en qué se va cada semana o cada mes.</p>
-      </div>
-      <div class="card">
-        <h3>Presupuesto personal</h3>
-        <p>Conoce cómo organizar tu dinero para evitar gastos innecesarios y cumplir metas.</p>
-      </div>
-      <div class="card">
-        <h3>Gasto hormiga</h3>
-        <p>Descubre cómo pequeños gastos diarios pueden afectar tus finanzas a largo plazo.</p>
-      </div>
-    </div>
-  </section>
-
-  <section id="organiza">
-    <h2 class="section-title">Organiza tu dinero</h2>
-    <p class="section-text">
-      La educación financiera empieza con pequeños hábitos. Registrar tus gastos, definir metas y planear tus decisiones
-      puede ayudarte a tener mayor control sobre tu dinero.
+<!-- 03-04 OBJETIVOS -->
+<section id="objetivos">
+  <span class="section-label">03–04 · Objetivos</span>
+  <h2 class="section-title">Objetivo general y particulares</h2>
+  <div class="divider"></div>
+  <div class="highlight">
+    <h3>Objetivo General</h3>
+    <p>
+      Fortalecer las competencias de educación financiera de los estudiantes del CBTIS 76 mediante el diseño
+      e implementación de un sitio web educativo con recursos didácticos digitales interactivos centrados en
+      el ahorro, el presupuesto personal y la toma de decisiones responsables.
     </p>
+  </div>
+  <ul class="obj-list">
+    <li><span class="num">1</span> Identificar los conocimientos previos de los estudiantes sobre ingresos, gastos y ahorro mediante un diagnóstico inicial.</li>
+    <li><span class="num">2</span> Diseñar contenidos digitales accesibles que expliquen conceptos clave como presupuesto personal, gasto hormiga y metas de ahorro.</li>
+    <li><span class="num">3</span> Desarrollar una zona interactiva con retos, casos prácticos y ejercicios financieros que permitan aplicar lo aprendido.</li>
+    <li><span class="num">4</span> Crear un Escape Room Financiero como recurso innovador que motive la participación activa y el pensamiento crítico.</li>
+    <li><span class="num">5</span> Evaluar el impacto del sitio web en el aprendizaje y los hábitos financieros de los estudiantes del CBTIS 76.</li>
+  </ul>
+</section>
 
-    <div class="highlight">
-      <h3>Meta del sitio</h3>
-      <p>
-        Ayudar a los estudiantes a fortalecer sus conocimientos sobre ahorro, presupuesto,
-        administración del dinero y toma de decisiones financieras por medio de recursos didácticos digitales.
-      </p>
-    </div>
-  </section>
-
-  <section id="interactiva">
-    <h2 class="section-title">Zona interactiva</h2>
-    <p class="section-text">
-      Aquí se integrarán actividades, retos, ejercicios y dinámicas que permitan aplicar de manera práctica
-      los conocimientos aprendidos en el sitio.
+<!-- 05 HIPÓTESIS -->
+<div class="bg-alt">
+<section id="hipotesis">
+  <span class="section-label">05 · Hipótesis</span>
+  <h2 class="section-title">Planteamiento hipotético</h2>
+  <div class="divider"></div>
+  <div class="hypothesis-box">
+    <h3>Hipótesis principal</h3>
+    <p>
+      Si los estudiantes del CBTIS 76 utilizan el sitio web <strong>Control y Ahorro</strong> con sus recursos
+      didácticos digitales —incluyendo el Escape Room Financiero— entonces mejorarán significativamente su
+      comprensión sobre finanzas personales y desarrollarán hábitos de ahorro y planeación más sólidos en
+      su vida cotidiana.
     </p>
+  </div>
+</section>
+</div>
 
-    <div class="cards">
-      <div class="card">
-        <h3>Retos de ahorro</h3>
-        <p>Pequeñas actividades para mejorar hábitos financieros mediante metas sencillas y realistas.</p>
-      </div>
-      <div class="card">
-        <h3>Casos prácticos</h3>
-        <p>Situaciones cotidianas para analizar decisiones relacionadas con gastos, ahorro y administración.</p>
-      </div>
-      <div class="card">
-        <h3>Ejercicios financieros</h3>
-        <p>Actividades para poner en práctica conceptos básicos de finanzas personales.</p>
-      </div>
+<!-- 06 METODOLOGÍA -->
+<section id="metodologia">
+  <span class="section-label">06 · Metodología</span>
+  <h2 class="section-title">¿Cómo se desarrolla el proyecto?</h2>
+  <div class="divider"></div>
+  <p class="section-text">
+    El proyecto sigue un enfoque de investigación-acción educativa: se diagnostica, se diseña, se implementa
+    y se evalúa el impacto de los recursos didácticos en los estudiantes.
+  </p>
+  <div class="cards">
+    <div class="card">
+      <div class="card-icon">🔍</div>
+      <h3>Diagnóstico</h3>
+      <p>Aplicación de una encuesta inicial para identificar los conocimientos y hábitos financieros de los estudiantes del CBTIS 76.</p>
     </div>
-  </section>
-
-  <section id="escape-room">
-    <h2 class="section-title">Escape Room Financiero</h2>
-    <p class="section-text">
-      “Misión: Saldo a Favor” será una experiencia interactiva donde los estudiantes pondrán a prueba
-      sus conocimientos sobre gasto hormiga, presupuesto, ahorro y toma de decisiones.
-    </p>
-
-    <div class="cta-box">
-      <h3>Próximamente disponible</h3>
-      <p>
-        Este espacio contendrá la actividad central e innovadora del proyecto, integrada dentro de la página web
-        como recurso didáctico digital.
-      </p>
-      <a href="#recursos">Ver más recursos</a>
+    <div class="card">
+      <div class="card-icon">🎨</div>
+      <h3>Diseño del sitio web</h3>
+      <p>Creación del sitio Control y Ahorro con secciones de aprendizaje, zona interactiva y el Escape Room Financiero.</p>
     </div>
-  </section>
-
-  <section id="recursos">
-    <h2 class="section-title">Recursos</h2>
-    <p class="section-text">
-      Esta sección reunirá materiales de apoyo, consejos, recursos visuales y herramientas útiles
-      para fortalecer el aprendizaje financiero.
-    </p>
-
-    <div class="cards">
-      <div class="card">
-        <h3>Consejos prácticos</h3>
-        <p>Recomendaciones sencillas para mejorar el uso del dinero en la vida diaria.</p>
-      </div>
-      <div class="card">
-        <h3>Material didáctico</h3>
-        <p>Infografías, textos y recursos de apoyo relacionados con las finanzas personales.</p>
-      </div>
-      <div class="card">
-        <h3>Herramientas</h3>
-        <p>Espacio para futuras plantillas, registros y actividades de organización financiera.</p>
-      </div>
+    <div class="card">
+      <div class="card-icon">🚀</div>
+      <h3>Implementación</h3>
+      <p>Aplicación del recurso en el aula con estudiantes del CBTIS 76, integrando actividades prácticas y retos de ahorro.</p>
     </div>
-  </section>
+    <div class="card">
+      <div class="card-icon">📊</div>
+      <h3>Evaluación</h3>
+      <p>Medición del aprendizaje mediante rúbricas, encuestas de salida y análisis del desempeño en el Escape Room.</p>
+    </div>
+  </div>
+</section>
 
-  <footer>
-    <p>Control y Ahorro | Proyecto educativo sobre finanzas personales</p>
-  </footer>
+<!-- 07 ÍNDICE -->
+<div class="bg-alt">
+<section id="indice">
+  <span class="section-label">07 · Índice Temático</span>
+  <h2 class="section-title">Contenido del sitio web</h2>
+  <div class="divider"></div>
+  <div class="index-grid">
+    <div class="chapter">
+      <p class="chapter-tag">Módulo 1</p>
+      <h3>Aprende sobre tus finanzas</h3>
+      <ul>
+        <li>Ingresos y gastos</li>
+        <li>Presupuesto personal</li>
+        <li>El gasto hormiga</li>
+      </ul>
+    </div>
+    <div class="chapter">
+      <p class="chapter-tag">Módulo 2</p>
+      <h3>Organiza tu dinero</h3>
+      <ul>
+        <li>Registro de gastos</li>
+        <li>Definición de metas de ahorro</li>
+        <li>Planeación financiera</li>
+      </ul>
+    </div>
+    <div class="chapter" id="escape-room">
+      <p class="chapter-tag">Módulo 3</p>
+      <h3>Zona Interactiva</h3>
+      <ul>
+        <li>Retos de ahorro</li>
+        <li>Casos prácticos</li>
+        <li>Ejercicios financieros</li>
+      </ul>
+    </div>
+    <div class="chapter">
+      <p class="chapter-tag">Módulo 4</p>
+      <h3>Escape Room: "Misión Saldo a Favor"</h3>
+      <ul>
+        <li>Gasto hormiga (acertijo 1)</li>
+        <li>Presupuesto (acertijo 2)</li>
+        <li>Ahorro y toma de decisiones</li>
+      </ul>
+    </div>
+    <div class="chapter">
+      <p class="chapter-tag">Módulo 5</p>
+      <h3>Recursos de apoyo</h3>
+      <ul>
+        <li>Consejos prácticos</li>
+        <li>Material didáctico</li>
+        <li>Herramientas y plantillas</li>
+      </ul>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- 08 CRONOGRAMA -->
+<section id="cronograma">
+  <span class="section-label">08 · Cronograma de Actividades</span>
+  <h2 class="section-title">Plan de trabajo</h2>
+  <div class="divider"></div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Etapa</th>
+          <th>Mes 1–2</th>
+          <th>Mes 3–4</th>
+          <th>Mes 5–6</th>
+          <th>Mes 7–8</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Revisión bibliográfica y diagnóstico</td><td><span class="dot"></span></td><td></td><td></td><td></td></tr>
+        <tr><td>Diseño del sitio web y contenidos</td><td><span class="dot"></span></td><td><span class="dot"></span></td><td></td><td></td></tr>
+        <tr><td>Desarrollo del Escape Room</td><td></td><td><span class="dot"></span></td><td><span class="dot"></span></td><td></td></tr>
+        <tr><td>Implementación con estudiantes CBTIS 76</td><td></td><td></td><td><span class="dot"></span></td><td></td></tr>
+        <tr><td>Evaluación y análisis de resultados</td><td></td><td></td><td></td><td><span class="dot"></span></td></tr>
+        <tr><td>Presentación final del proyecto</td><td></td><td></td><td></td><td><span class="dot"></span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 09 BIBLIOGRAFÍA -->
+<div class="bg-alt">
+<section id="bibliografia">
+  <span class="section-label">09 · Bibliografía y Referencias</span>
+  <h2 class="section-title">Fuentes consultadas</h2>
+  <div class="divider"></div>
+  <ul class="bib-list">
+    <li>Comisión Nacional para la Protección y Defensa de los Usuarios de Servicios Financieros – CONDUSEF. <em>Educación financiera básica.</em> México. Recuperado de: www.condusef.gob.mx</li>
+    <li>Secretaría de Educación Pública (SEP). <em>Competencias financieras en el bachillerato.</em> México: SEP.</li>
+    <li>Banco de México. <em>Inclusión y educación financiera.</em> México: Banxico. Recuperado de: www.banxico.org.mx</li>
+    <li>Manzano, A. (2017). <em>Finanzas personales para jóvenes: guía práctica.</em> México: Editorial Patria.</li>
+    <li>García, R. (2020). <em>Gamificación en la educación: Escape Room como herramienta didáctica.</em> Revista de Innovación Educativa, 12(3), 45–58.</li>
+    <li>OCDE (2020). <em>Competencias financieras de los jóvenes: resultados de PISA 2018.</em> París: OCDE Publishing.</li>
+  </ul>
+</section>
+</div>
+
+<!-- CTA -->
+<section>
+  <div class="cta-box">
+    <h2>¿Quieres saber más del proyecto?</h2>
+    <p>Este proyecto fue desarrollado para los estudiantes del CBTIS 76 como recurso didáctico digital sobre finanzas personales.</p>
+    <a href="#justificacion">Ver protocolo completo</a>
+    <a href="#escape-room">Ir al Escape Room</a>
+  </div>
+</section>
+
+<footer>
+  <p><span>Control y Ahorro</span> · Proyecto educativo sobre finanzas personales</p>
+  <p style="margin-top:6px;">CBTIS 76 · Morelos, México</p>
+</footer>
 
 </body>
 </html>
