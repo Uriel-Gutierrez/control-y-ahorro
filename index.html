@@ -1,13 +1,28 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Control y Ahorro | CBTIS 76</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+
+  <!-- Firebase SDKs (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
   <style>
+    /* ══════════════════════════════════════
+       VARIABLES LIGHT / DARK
+    ══════════════════════════════════════ */
     :root {
+      --bg:         #f8fafc;
+      --bg2:        #edf7f6;
+      --surface:    #ffffff;
+      --ink:        #1e293b;
+      --slate:      #475569;
+      --border:     #e2e8f0;
       --green:      #0f766e;
       --green-dark: #134e4a;
       --green-deep: #0d3d38;
@@ -18,974 +33,636 @@
       --gold-lite:  #fef3c7;
       --red:        #ef4444;
       --blue:       #3b82f6;
-      --purple:     #8b5cf6;
-      --ink:        #1e293b;
-      --slate:      #475569;
-      --cream:      #f8fafc;
-      --white:      #ffffff;
-      --card-shadow: 0 8px 32px rgba(0,0,0,.12);
+      --purple:     #7c3aed;
+      --shadow:     0 6px 24px rgba(0,0,0,.10);
+      --shadow-lg:  0 12px 40px rgba(0,0,0,.15);
     }
- 
+    [data-theme="dark"] {
+      --bg:         #0f172a;
+      --bg2:        #1e293b;
+      --surface:    #1e293b;
+      --ink:        #f1f5f9;
+      --slate:      #94a3b8;
+      --border:     #334155;
+      --green-lite: #134e4a;
+      --gold-lite:  #451a03;
+      --shadow:     0 6px 24px rgba(0,0,0,.35);
+      --shadow-lg:  0 12px 40px rgba(0,0,0,.45);
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
- 
     body {
       font-family: 'Nunito', sans-serif;
-      background: var(--cream);
+      background: var(--bg);
       color: var(--ink);
       min-height: 100vh;
       overflow-x: hidden;
+      transition: background .3s, color .3s;
     }
- 
-    /* ═══════════════════════════════════════════
-       SCREENS SYSTEM
-    ═══════════════════════════════════════════ */
-    .screen {
-      display: none;
-      animation: fadeScreen .35s ease;
-    }
+
+    /* ══════════════════════════════════════
+       SCREENS
+    ══════════════════════════════════════ */
+    .screen { display: none; animation: fadeIn .35s ease; }
     .screen.active { display: block; }
- 
-    @keyframes fadeScreen {
-      from { opacity: 0; transform: translateY(16px); }
-      to   { opacity: 1; transform: translateY(0); }
+    @keyframes fadeIn {
+      from { opacity:0; transform:translateY(14px); }
+      to   { opacity:1; transform:translateY(0); }
     }
- 
-    /* ═══════════════════════════════════════════
+
+    /* ══════════════════════════════════════
        NAVBAR
-    ═══════════════════════════════════════════ */
+    ══════════════════════════════════════ */
     .navbar {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 999;
+      position: fixed; top:0; left:0; right:0; z-index:999;
       background: var(--green-deep);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 24px;
-      height: 58px;
-      box-shadow: 0 2px 16px rgba(0,0,0,.25);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 16px; height: 58px;
+      box-shadow: 0 2px 16px rgba(0,0,0,.3);
     }
- 
     .nav-brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
+      display: flex; align-items: center; gap: 9px; cursor: pointer; flex-shrink:0;
     }
- 
-    .nav-logo {
-      width: 36px; height: 36px;
-    }
- 
-    .nav-title {
-      font-family: 'Fredoka One', cursive;
-      font-size: 1.25rem;
-      color: white;
-      letter-spacing: .02em;
-    }
- 
+    .nav-logo { width:34px; height:34px; }
+    .nav-title { font-family:'Fredoka One',cursive; font-size:1.15rem; color:white; }
     .nav-title span { color: var(--gold); }
- 
-    .nav-links {
-      display: flex;
-      gap: 4px;
-    }
- 
+    .nav-links { display:flex; gap:2px; flex-wrap:nowrap; }
     .nav-btn {
-      background: none;
-      border: none;
-      color: rgba(255,255,255,.75);
-      font-family: 'Nunito', sans-serif;
-      font-weight: 700;
-      font-size: .8rem;
-      padding: 7px 13px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all .2s;
-      letter-spacing: .03em;
+      background:none; border:none; color:rgba(255,255,255,.7);
+      font-family:'Nunito',sans-serif; font-weight:700; font-size:.75rem;
+      padding:6px 10px; border-radius:8px; cursor:pointer; transition:all .2s;
+      white-space:nowrap;
     }
- 
-    .nav-btn:hover, .nav-btn.active {
-      background: rgba(255,255,255,.15);
-      color: white;
+    .nav-btn:hover, .nav-btn.active { background:rgba(255,255,255,.15); color:white; }
+    .nav-btn.active { background:var(--green); }
+    .nav-right { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+    .dark-toggle {
+      background:rgba(255,255,255,.12); border:none; border-radius:50%;
+      width:34px; height:34px; font-size:1rem; cursor:pointer;
+      color:white; transition:background .2s;
     }
- 
-    .nav-btn.active {
-      background: var(--green);
-      color: white;
+    .dark-toggle:hover { background:rgba(255,255,255,.25); }
+    .user-avatar {
+      width:32px; height:32px; border-radius:50%; object-fit:cover;
+      border:2px solid var(--gold); cursor:pointer; display:none;
     }
- 
-    /* ═══════════════════════════════════════════
+    .login-btn {
+      background:var(--gold); color:#7c2d12; border:none;
+      font-family:'Nunito',sans-serif; font-weight:800; font-size:.72rem;
+      padding:6px 12px; border-radius:8px; cursor:pointer; transition:all .2s;
+      white-space:nowrap;
+    }
+    .login-btn:hover { background:#fbbf24; }
+
+    /* ══════════════════════════════════════
+       HAMBURGER (MOBILE)
+    ══════════════════════════════════════ */
+    .hamburger {
+      display:none; flex-direction:column; gap:4px;
+      background:none; border:none; cursor:pointer; padding:6px;
+    }
+    .hamburger span {
+      width:22px; height:2.5px; background:white; border-radius:2px;
+      transition:all .3s;
+    }
+    .mobile-menu {
+      display:none; position:fixed; top:58px; left:0; right:0; z-index:998;
+      background:var(--green-deep); padding:12px 16px;
+      box-shadow:0 8px 24px rgba(0,0,0,.3); flex-direction:column; gap:4px;
+    }
+    .mobile-menu.open { display:flex; }
+    .mobile-menu .nav-btn { text-align:left; font-size:.88rem; padding:10px 14px; }
+
+    @media(max-width:768px) {
+      .nav-links { display:none; }
+      .hamburger { display:flex; }
+    }
+
+    /* ══════════════════════════════════════
        PAGE WRAPPER
-    ═══════════════════════════════════════════ */
-    .page {
-      padding-top: 58px;
-      min-height: 100vh;
-    }
- 
-    /* ═══════════════════════════════════════════
-       ██ SCREEN: HOME
-    ═══════════════════════════════════════════ */
-    .hero {
-      background: linear-gradient(160deg, var(--green-deep) 0%, #0f5c56 50%, #166a62 100%);
-      min-height: calc(100vh - 58px);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 24px 60px;
-      position: relative;
-      overflow: hidden;
-      text-align: center;
-    }
- 
-    /* floating coins background */
-    .coins-bg {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      overflow: hidden;
-    }
- 
-    .coin-float {
-      position: absolute;
-      font-size: 1.8rem;
-      opacity: .18;
-      animation: floatCoin linear infinite;
-    }
- 
-    @keyframes floatCoin {
-      0%   { transform: translateY(110vh) rotate(0deg); opacity: 0; }
-      10%  { opacity: .18; }
-      90%  { opacity: .18; }
-      100% { transform: translateY(-20vh) rotate(360deg); opacity: 0; }
-    }
- 
-    /* mascot SVG */
-    .mascot-wrap {
-      position: relative;
-      margin-bottom: 24px;
-      animation: mascotBounce 3s ease-in-out infinite;
-    }
- 
-    @keyframes mascotBounce {
-      0%, 100% { transform: translateY(0); }
-      50%       { transform: translateY(-12px); }
-    }
- 
-    .mascot-svg { width: 140px; height: 140px; filter: drop-shadow(0 10px 28px rgba(0,0,0,.35)); }
- 
-    /* speech bubble */
-    .speech-bubble {
-      position: absolute;
-      top: -20px;
-      right: -130px;
-      background: white;
-      color: var(--ink);
-      font-size: .82rem;
-      font-weight: 700;
-      line-height: 1.45;
-      padding: 10px 14px;
-      border-radius: 16px 16px 16px 4px;
-      width: 150px;
-      box-shadow: 0 4px 16px rgba(0,0,0,.18);
-      animation: bubblePop .5s .8s both cubic-bezier(.34,1.56,.64,1);
-    }
- 
-    .speech-bubble::before {
-      content: '';
-      position: absolute;
-      left: -8px;
-      top: 14px;
-      border: 8px solid transparent;
-      border-right-color: white;
-      border-left: 0;
-    }
- 
-    @keyframes bubblePop {
-      from { opacity: 0; transform: scale(.6); }
-      to   { opacity: 1; transform: scale(1); }
-    }
- 
-    .hero-badge {
-      display: inline-block;
-      background: rgba(255,255,255,.15);
-      border: 1px solid rgba(255,255,255,.3);
-      color: var(--green-glow);
-      font-size: .75rem;
-      font-weight: 800;
-      letter-spacing: .18em;
-      text-transform: uppercase;
-      padding: 6px 20px;
-      border-radius: 50px;
-      margin-bottom: 18px;
-    }
- 
-    .hero h1 {
-      font-family: 'Fredoka One', cursive;
-      font-size: clamp(2.8rem, 7vw, 5rem);
-      color: white;
-      line-height: 1.05;
-      margin-bottom: 16px;
-      letter-spacing: .01em;
-    }
- 
-    .hero h1 .accent { color: var(--gold); }
- 
-    .hero-sub {
-      font-size: 1.1rem;
-      color: rgba(255,255,255,.75);
-      max-width: 560px;
-      margin: 0 auto 40px;
-    }
- 
-    /* MENU CARDS */
-    .menu-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 16px;
-      max-width: 900px;
-      width: 100%;
-      margin: 0 auto;
-    }
- 
-    .menu-card {
-      background: rgba(255,255,255,.1);
-      backdrop-filter: blur(10px);
-      border: 1.5px solid rgba(255,255,255,.2);
-      border-radius: 20px;
-      padding: 26px 18px;
-      cursor: pointer;
-      transition: all .25s cubic-bezier(.34,1.56,.64,1);
-      text-align: center;
-      color: white;
-      position: relative;
-      overflow: hidden;
-    }
- 
-    .menu-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--card-color, var(--green));
-      opacity: 0;
-      transition: opacity .2s;
-      border-radius: 18px;
-    }
- 
-    .menu-card:hover {
-      transform: translateY(-8px) scale(1.04);
-      border-color: rgba(255,255,255,.5);
-      box-shadow: 0 16px 40px rgba(0,0,0,.3);
-    }
- 
-    .menu-card:hover::before { opacity: .25; }
- 
-    .menu-card-icon {
-      font-size: 2.6rem;
-      margin-bottom: 10px;
-      display: block;
-      position: relative;
-      z-index: 1;
-    }
- 
-    .menu-card-title {
-      font-family: 'Fredoka One', cursive;
-      font-size: 1.05rem;
-      letter-spacing: .02em;
-      position: relative;
-      z-index: 1;
-    }
- 
-    .menu-card-desc {
-      font-size: .75rem;
-      color: rgba(255,255,255,.7);
-      margin-top: 5px;
-      position: relative;
-      z-index: 1;
-    }
- 
-    .menu-card .card-badge {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: var(--gold);
-      color: #7c2d12;
-      font-size: .6rem;
-      font-weight: 900;
-      padding: 3px 7px;
-      border-radius: 50px;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-    }
- 
-    /* ═══════════════════════════════════════════
-       ██ SHARED SECTION STYLES
-    ═══════════════════════════════════════════ */
+    ══════════════════════════════════════ */
+    .page { padding-top:58px; min-height:100vh; }
+
+    /* ══════════════════════════════════════
+       SHARED COMPONENTS
+    ══════════════════════════════════════ */
     .section-hero {
       background: linear-gradient(135deg, var(--green-deep), var(--green));
-      color: white;
-      padding: 56px 24px 48px;
-      text-align: center;
+      color:white; padding:52px 24px 44px; text-align:center;
     }
- 
     .section-hero h1 {
-      font-family: 'Fredoka One', cursive;
-      font-size: clamp(2rem, 5vw, 3.2rem);
-      margin-bottom: 10px;
-      letter-spacing: .02em;
+      font-family:'Fredoka One',cursive;
+      font-size:clamp(1.8rem,5vw,3rem); margin-bottom:8px;
     }
- 
-    .section-hero p {
-      font-size: 1rem;
-      color: rgba(255,255,255,.78);
-      max-width: 560px;
-      margin: 0 auto;
-    }
- 
-    .section-body {
-      max-width: 1060px;
-      margin: 0 auto;
-      padding: 48px 24px 60px;
-    }
- 
+    .section-hero p { color:rgba(255,255,255,.78); max-width:540px; margin:0 auto; }
+
+    .section-body { max-width:1060px; margin:0 auto; padding:44px 20px 60px; }
+
     .back-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--green-lite);
-      color: var(--green-dark);
-      font-weight: 800;
-      font-size: .88rem;
-      padding: 9px 18px;
-      border-radius: 50px;
-      border: none;
-      cursor: pointer;
-      margin-bottom: 32px;
-      transition: all .2s;
+      display:inline-flex; align-items:center; gap:7px;
+      background:var(--green-lite); color:var(--green-dark);
+      font-weight:800; font-size:.85rem; padding:8px 16px;
+      border-radius:50px; border:none; cursor:pointer; margin-bottom:28px;
+      transition:all .2s;
     }
- 
-    .back-btn:hover { background: var(--green-glow); }
- 
-    /* content cards */
-    .content-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 22px;
-      margin-top: 24px;
+    .back-btn:hover { background:var(--green-glow); }
+
+    .s-label {
+      display:block; font-size:.7rem; letter-spacing:.16em;
+      text-transform:uppercase; color:var(--green); font-weight:800; margin-bottom:5px;
     }
- 
-    .content-card {
-      background: white;
-      border-radius: 20px;
-      padding: 28px 24px;
-      box-shadow: var(--card-shadow);
-      border-top: 5px solid var(--green);
-      transition: transform .2s;
+    .s-title {
+      font-family:'Fredoka One',cursive; font-size:1.65rem;
+      color:var(--green-dark); margin-bottom:6px;
     }
- 
-    .content-card:hover { transform: translateY(-4px); }
- 
-    .content-card .card-emoji {
-      font-size: 2.4rem;
-      margin-bottom: 12px;
-      display: block;
+    [data-theme="dark"] .s-title { color:var(--green-glow); }
+    .s-divider {
+      width:46px; height:4px;
+      background:linear-gradient(90deg,var(--green),var(--green-glow));
+      border-radius:2px; margin-bottom:20px;
     }
- 
-    .content-card h3 {
-      font-family: 'Fredoka One', cursive;
-      font-size: 1.2rem;
-      color: var(--green-dark);
-      margin-bottom: 10px;
+
+    /* CARDS */
+    .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:18px; }
+    .card {
+      background:var(--surface); border-radius:18px; padding:24px 20px;
+      box-shadow:var(--shadow); border-top:4px solid var(--green);
+      transition:transform .2s, box-shadow .2s;
     }
- 
-    .content-card p {
-      color: var(--slate);
-      font-size: .95rem;
-      line-height: 1.65;
+    .card:hover { transform:translateY(-4px); box-shadow:var(--shadow-lg); }
+    .card-icon { font-size:2.2rem; margin-bottom:10px; display:block; }
+    .card h3 { font-family:'Fredoka One',cursive; font-size:1.05rem; color:var(--green-dark); margin-bottom:8px; }
+    [data-theme="dark"] .card h3 { color:var(--green-glow); }
+    .card p { color:var(--slate); font-size:.91rem; line-height:1.6; }
+
+    /* HIGHLIGHT */
+    .highlight {
+      background:var(--green-lite); border-left:5px solid var(--green);
+      border-radius:14px; padding:26px 30px; margin:20px 0;
     }
- 
-    /* COMIC PANEL */
-    .comic-panel {
-      background: white;
-      border-radius: 20px;
-      box-shadow: var(--card-shadow);
-      overflow: hidden;
-      margin-bottom: 24px;
-    }
- 
-    .comic-header {
-      background: var(--green-deep);
-      color: white;
-      padding: 12px 20px;
-      font-family: 'Fredoka One', cursive;
-      font-size: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
- 
-    .comic-body {
-      display: flex;
-      align-items: flex-start;
-      gap: 20px;
-      padding: 24px;
-    }
- 
-    .comic-mascot { flex-shrink: 0; width: 70px; }
- 
-    .comic-dialogue {
-      background: var(--green-lite);
-      border-radius: 0 18px 18px 18px;
-      padding: 14px 18px;
-      position: relative;
-      flex: 1;
-    }
- 
-    .comic-dialogue::before {
-      content: '';
-      position: absolute;
-      left: -10px;
-      top: 14px;
-      border: 10px solid transparent;
-      border-right-color: var(--green-lite);
-      border-left: 0;
-    }
- 
-    .comic-dialogue p {
-      color: var(--ink);
-      font-size: .95rem;
-      line-height: 1.6;
-      font-weight: 600;
-    }
- 
-    .comic-dialogue .highlight-word {
-      color: var(--green);
-      font-weight: 800;
-    }
- 
-    /* HIGHLIGHT BOX */
-    .highlight-box {
-      background: linear-gradient(135deg, var(--green-lite), #ecfeff);
-      border-left: 6px solid var(--green);
-      border-radius: 16px;
-      padding: 28px 32px;
-      margin: 28px 0;
-    }
- 
-    .highlight-box h3 {
-      font-family: 'Fredoka One', cursive;
-      font-size: 1.2rem;
-      color: var(--green-dark);
-      margin-bottom: 10px;
-    }
- 
-    .highlight-box p { color: var(--slate); font-size: .97rem; }
- 
+    .highlight h3 { font-family:'Fredoka One',cursive; color:var(--green-dark); margin-bottom:8px; }
+    [data-theme="dark"] .highlight h3 { color:var(--green-glow); }
+    .highlight p, .highlight li { color:var(--slate); font-size:.95rem; }
+    .highlight ul { padding-left:18px; margin-top:8px; }
+    .highlight li { margin-bottom:5px; }
+
     /* GOLD BOX */
     .gold-box {
-      background: var(--gold-lite);
-      border: 2px solid var(--gold);
-      border-radius: 16px;
-      padding: 28px 32px;
-      margin: 28px 0;
+      background:var(--gold-lite); border:2px solid var(--gold);
+      border-radius:14px; padding:24px 28px; margin:20px 0;
     }
- 
-    .gold-box h3 {
-      font-family: 'Fredoka One', cursive;
-      font-size: 1.15rem;
-      color: var(--gold-dark);
-      margin-bottom: 10px;
+    .gold-box h3 { font-family:'Fredoka One',cursive; color:var(--gold-dark); margin-bottom:8px; }
+    .gold-box p, .gold-box li { color:#78350f; font-size:.93rem; }
+    [data-theme="dark"] .gold-box p, [data-theme="dark"] .gold-box li { color:#fcd34d; }
+    .gold-box ul { padding-left:18px; margin-top:8px; }
+    .gold-box li { margin-bottom:5px; }
+
+    /* COMIC PANEL */
+    .comic-panel {
+      background:var(--surface); border-radius:18px;
+      box-shadow:var(--shadow); overflow:hidden; margin-bottom:22px;
     }
- 
-    .gold-box p, .gold-box li { color: #7c4a00; font-size: .95rem; }
-    .gold-box ul { padding-left: 18px; margin-top: 10px; }
-    .gold-box li { margin-bottom: 6px; }
- 
-    /* SECTION TITLE */
-    .s-title {
-      font-family: 'Fredoka One', cursive;
-      font-size: 1.7rem;
-      color: var(--green-dark);
-      margin-bottom: 6px;
+    .comic-header {
+      background:var(--green-deep); color:white; padding:11px 18px;
+      font-family:'Fredoka One',cursive; font-size:.95rem;
+      display:flex; align-items:center; gap:7px;
     }
- 
-    .s-label {
-      font-size: .72rem;
-      letter-spacing: .15em;
-      text-transform: uppercase;
-      color: var(--green);
-      font-weight: 800;
-      margin-bottom: 6px;
-      display: block;
+    .comic-body { display:flex; align-items:flex-start; gap:16px; padding:20px; }
+    .comic-mascot { flex-shrink:0; width:64px; }
+    .comic-dialogue {
+      background:var(--green-lite); border-radius:0 16px 16px 16px;
+      padding:13px 16px; position:relative; flex:1;
     }
- 
-    .s-divider {
-      width: 48px; height: 4px;
-      background: linear-gradient(90deg, var(--green), var(--green-glow));
-      border-radius: 2px;
-      margin-bottom: 22px;
+    .comic-dialogue::before {
+      content:''; position:absolute; left:-9px; top:13px;
+      border:9px solid transparent; border-right-color:var(--green-lite); border-left:0;
     }
- 
-    /* ═══════════════════════════════════════════
-       ██ SCREEN: APRENDE (LEARN)
-    ═══════════════════════════════════════════ */
+    .comic-dialogue p { color:var(--ink); font-size:.92rem; line-height:1.6; font-weight:600; }
+    .hw { color:var(--green); font-weight:800; }
+
+    /* MINI MASCOT SVG inline */
+    .mmascot { width:64px; height:64px; }
+
+    /* BTN STYLES */
+    .btn-green {
+      background:var(--green); color:white; border:none;
+      font-family:'Fredoka One',cursive; font-size:1rem;
+      padding:13px 28px; border-radius:12px; cursor:pointer;
+      transition:background .2s, transform .1s; letter-spacing:.02em;
+    }
+    .btn-green:hover { background:var(--green-dark); }
+    .btn-green:active { transform:scale(.97); }
+    .btn-gold {
+      background:var(--gold); color:#7c2d12; border:none;
+      font-family:'Fredoka One',cursive; font-size:1rem;
+      padding:13px 28px; border-radius:12px; cursor:pointer;
+      transition:all .2s;
+    }
+    .btn-gold:hover { background:#fbbf24; }
+
+    /* ══════════════════════════════════════
+       HOME SCREEN
+    ══════════════════════════════════════ */
+    .hero {
+      background:linear-gradient(160deg, var(--green-deep) 0%, #0f5c56 50%, #166a62 100%);
+      min-height:calc(100vh - 58px);
+      display:flex; flex-direction:column; align-items:center;
+      justify-content:center; padding:40px 20px 60px;
+      position:relative; overflow:hidden; text-align:center;
+    }
+    .coins-bg { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+    .coin-float {
+      position:absolute; font-size:1.6rem; opacity:.16;
+      animation:floatUp linear infinite;
+    }
+    @keyframes floatUp {
+      0%   { transform:translateY(110vh) rotate(0deg); opacity:0; }
+      10%  { opacity:.16; }
+      90%  { opacity:.16; }
+      100% { transform:translateY(-20vh) rotate(360deg); opacity:0; }
+    }
+    .mascot-wrap {
+      position:relative; margin-bottom:20px;
+      animation:bounce 3s ease-in-out infinite;
+    }
+    @keyframes bounce {
+      0%,100% { transform:translateY(0); }
+      50%      { transform:translateY(-10px); }
+    }
+    .mascot-big { width:130px; height:130px; filter:drop-shadow(0 8px 24px rgba(0,0,0,.4)); }
+    .speech-bubble {
+      position:absolute; top:-16px; right:-134px;
+      background:white; color:var(--ink); font-size:.78rem; font-weight:700;
+      line-height:1.4; padding:9px 13px; border-radius:14px 14px 14px 4px;
+      width:148px; box-shadow:0 4px 14px rgba(0,0,0,.18);
+      animation:bubblePop .5s .8s both cubic-bezier(.34,1.56,.64,1);
+    }
+    .speech-bubble::before {
+      content:''; position:absolute; left:-8px; top:12px;
+      border:8px solid transparent; border-right-color:white; border-left:0;
+    }
+    @keyframes bubblePop {
+      from { opacity:0; transform:scale(.5); }
+      to   { opacity:1; transform:scale(1); }
+    }
+    .hero-badge {
+      display:inline-block; background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.28); color:var(--green-glow);
+      font-size:.72rem; font-weight:800; letter-spacing:.16em;
+      text-transform:uppercase; padding:5px 18px; border-radius:50px; margin-bottom:14px;
+    }
+    .hero h1 {
+      font-family:'Fredoka One',cursive;
+      font-size:clamp(2.6rem,7vw,4.5rem); color:white;
+      line-height:1.05; margin-bottom:12px;
+    }
+    .hero h1 .accent { color:var(--gold); }
+    .hero-sub { font-size:1.05rem; color:rgba(255,255,255,.74); max-width:520px; margin:0 auto 36px; }
+
+    /* MENU GRID */
+    .menu-grid {
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr));
+      gap:14px; max-width:860px; width:100%; margin:0 auto;
+    }
+    .menu-card {
+      background:rgba(255,255,255,.1); backdrop-filter:blur(8px);
+      border:1.5px solid rgba(255,255,255,.18); border-radius:18px;
+      padding:22px 14px; cursor:pointer; text-align:center; color:white;
+      transition:all .25s cubic-bezier(.34,1.56,.64,1); position:relative; overflow:hidden;
+    }
+    .menu-card:hover { transform:translateY(-7px) scale(1.04); border-color:rgba(255,255,255,.45); box-shadow:0 14px 36px rgba(0,0,0,.28); }
+    .menu-card-icon { font-size:2.4rem; margin-bottom:8px; display:block; }
+    .menu-card-title { font-family:'Fredoka One',cursive; font-size:1rem; letter-spacing:.02em; }
+    .menu-card-desc { font-size:.72rem; color:rgba(255,255,255,.65); margin-top:4px; }
+    .card-new {
+      position:absolute; top:8px; right:8px; background:var(--gold);
+      color:#7c2d12; font-size:.58rem; font-weight:900; padding:2px 7px;
+      border-radius:50px; text-transform:uppercase; letter-spacing:.08em;
+    }
+
+    /* ══════════════════════════════════════
+       APRENDE SCREEN – TOPIC TABS
+    ══════════════════════════════════════ */
+    .topic-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px; }
     .topic-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: white;
-      border: 2px solid var(--green-lite);
-      color: var(--green-dark);
-      font-family: 'Nunito', sans-serif;
-      font-weight: 800;
-      font-size: .88rem;
-      padding: 10px 18px;
-      border-radius: 50px;
-      cursor: pointer;
-      margin: 5px;
-      transition: all .2s;
+      background:var(--surface); border:2px solid var(--border);
+      color:var(--green-dark); font-family:'Nunito',sans-serif;
+      font-weight:800; font-size:.83rem; padding:8px 16px;
+      border-radius:50px; cursor:pointer; transition:all .2s;
     }
- 
     .topic-btn:hover, .topic-btn.active {
-      background: var(--green);
-      color: white;
-      border-color: var(--green);
+      background:var(--green); color:white; border-color:var(--green);
     }
- 
-    .topic-content { display: none; animation: fadeScreen .3s ease; }
-    .topic-content.active { display: block; }
- 
-    /* ═══════════════════════════════════════════
-       ██ SCREEN: ORGANIZA (BUDGET TOOL)
-    ═══════════════════════════════════════════ */
-    .budget-tool {
-      background: white;
-      border-radius: 24px;
-      padding: 36px;
-      box-shadow: var(--card-shadow);
-      margin-bottom: 28px;
+    .topic-content { display:none; animation:fadeIn .3s ease; }
+    .topic-content.active { display:block; }
+
+    /* ══════════════════════════════════════
+       ORGANIZA – TOOLS
+    ══════════════════════════════════════ */
+    .tool-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:28px; }
+    .tool-tab {
+      background:var(--surface); border:2px solid var(--border);
+      color:var(--green-dark); font-family:'Nunito',sans-serif;
+      font-weight:800; font-size:.83rem; padding:8px 16px;
+      border-radius:50px; cursor:pointer; transition:all .2s;
     }
- 
-    .budget-tool h3 {
-      font-family: 'Fredoka One', cursive;
-      font-size: 1.35rem;
-      color: var(--green-dark);
-      margin-bottom: 20px;
+    .tool-tab:hover, .tool-tab.active {
+      background:var(--green); color:white; border-color:var(--green);
     }
- 
-    .budget-row {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 14px;
+    .tool-panel { display:none; animation:fadeIn .3s ease; }
+    .tool-panel.active { display:block; }
+
+    .budget-box {
+      background:var(--surface); border-radius:20px;
+      padding:30px; box-shadow:var(--shadow); margin-bottom:22px;
     }
- 
-    .budget-row label {
-      flex: 1;
-      font-weight: 700;
-      font-size: .92rem;
-      color: var(--slate);
+    .budget-box h3 { font-family:'Fredoka One',cursive; font-size:1.25rem; color:var(--green-dark); margin-bottom:18px; }
+    [data-theme="dark"] .budget-box h3 { color:var(--green-glow); }
+    .b-row { display:flex; align-items:center; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
+    .b-row label { flex:1; min-width:180px; font-weight:700; font-size:.88rem; color:var(--slate); }
+    .b-row input {
+      width:130px; padding:9px 13px; border:2px solid var(--border);
+      border-radius:10px; font-family:'Nunito',sans-serif; font-size:.97rem;
+      font-weight:700; color:var(--ink); background:var(--bg); outline:none;
+      transition:border-color .2s;
     }
- 
-    .budget-row input {
-      width: 140px;
-      padding: 10px 14px;
-      border: 2px solid var(--green-lite);
-      border-radius: 10px;
-      font-family: 'Nunito', sans-serif;
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--ink);
-      outline: none;
-      transition: border-color .2s;
+    .b-row input:focus { border-color:var(--green); }
+    .b-result {
+      background:var(--green-deep); color:white; border-radius:14px;
+      padding:22px; margin-top:16px; display:none;
+      justify-content:space-around; flex-wrap:wrap; gap:14px;
     }
- 
-    .budget-row input:focus { border-color: var(--green); }
- 
-    .budget-result {
-      background: var(--green-deep);
-      color: white;
-      border-radius: 16px;
-      padding: 24px;
-      margin-top: 20px;
-      display: flex;
-      justify-content: space-around;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
- 
-    .budget-stat { text-align: center; }
- 
-    .budget-stat .stat-val {
-      font-family: 'Fredoka One', cursive;
-      font-size: 2rem;
-      color: var(--gold);
-    }
- 
-    .budget-stat .stat-label {
-      font-size: .78rem;
-      color: rgba(255,255,255,.7);
-      font-weight: 700;
-    }
- 
-    .calc-btn {
-      background: var(--green);
-      color: white;
-      border: none;
-      font-family: 'Fredoka One', cursive;
-      font-size: 1.1rem;
-      padding: 14px 32px;
-      border-radius: 14px;
-      cursor: pointer;
-      margin-top: 16px;
-      transition: background .2s, transform .1s;
-      width: 100%;
-      letter-spacing: .03em;
-    }
- 
-    .calc-btn:hover { background: var(--green-dark); }
-    .calc-btn:active { transform: scale(.97); }
- 
-    .result-bar-wrap {
-      background: rgba(255,255,255,.15);
-      border-radius: 50px;
-      height: 12px;
-      margin-top: 8px;
-      overflow: hidden;
-    }
- 
-    .result-bar {
-      height: 100%;
-      border-radius: 50px;
-      background: var(--gold);
-      transition: width .8s ease;
-      width: 0%;
-    }
- 
-    /* ═══════════════════════════════════════════
-       ██ SCREEN: ZONA INTERACTIVA
-    ═══════════════════════════════════════════ */
-    .challenge-card {
-      background: white;
-      border-radius: 20px;
-      padding: 28px;
-      box-shadow: var(--card-shadow);
-      margin-bottom: 20px;
-      position: relative;
-      overflow: hidden;
-    }
- 
-    .challenge-card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 5px;
-      background: var(--c-color, var(--green));
-    }
- 
-    .challenge-tag {
-      display: inline-block;
-      background: var(--green-lite);
-      color: var(--green-dark);
-      font-size: .72rem;
-      font-weight: 800;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      padding: 4px 12px;
-      border-radius: 50px;
-      margin-bottom: 12px;
-    }
- 
-    .challenge-card h3 {
-      font-family: 'Fredoka One', cursive;
-      font-size: 1.2rem;
-      color: var(--ink);
-      margin-bottom: 8px;
-    }
- 
-    .challenge-card p { color: var(--slate); font-size: .93rem; }
- 
+    .b-stat { text-align:center; }
+    .b-val { font-family:'Fredoka One',cursive; font-size:1.9rem; color:var(--gold); }
+    .b-lbl { font-size:.74rem; color:rgba(255,255,255,.65); font-weight:700; }
+    .bar-wrap { background:rgba(255,255,255,.15); border-radius:50px; height:11px; overflow:hidden; margin-top:6px; }
+    .bar-fill { height:100%; border-radius:50px; background:var(--gold); transition:width .8s ease; width:0; }
+
+    /* ══════════════════════════════════════
+       ZONA INTERACTIVA
+    ══════════════════════════════════════ */
     /* QUIZ */
     .quiz-box {
-      background: white;
-      border-radius: 20px;
-      padding: 32px;
-      box-shadow: var(--card-shadow);
+      background:var(--surface); border-radius:20px;
+      padding:28px; box-shadow:var(--shadow);
     }
- 
-    .quiz-box h3 {
-      font-family: 'Fredoka One', cursive;
-      font-size: 1.3rem;
-      color: var(--green-dark);
-      margin-bottom: 20px;
+    .quiz-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:8px; }
+    .quiz-header h3 { font-family:'Fredoka One',cursive; font-size:1.2rem; color:var(--green-dark); }
+    [data-theme="dark"] .quiz-header h3 { color:var(--green-glow); }
+    .quiz-progress {
+      font-size:.78rem; font-weight:700; color:var(--slate);
+      background:var(--bg2); padding:5px 12px; border-radius:50px;
     }
- 
-    .quiz-question {
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: var(--ink);
-      margin-bottom: 18px;
-      line-height: 1.5;
-    }
- 
-    .quiz-options { display: grid; gap: 10px; }
- 
+    .quiz-q { font-size:1rem; font-weight:700; color:var(--ink); margin-bottom:16px; line-height:1.55; }
+    .quiz-opts { display:grid; gap:9px; }
     .quiz-opt {
-      background: var(--cream);
-      border: 2px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 13px 18px;
-      font-family: 'Nunito', sans-serif;
-      font-weight: 700;
-      font-size: .93rem;
-      color: var(--ink);
-      cursor: pointer;
-      text-align: left;
-      transition: all .2s;
+      background:var(--bg); border:2px solid var(--border); border-radius:12px;
+      padding:12px 16px; font-family:'Nunito',sans-serif; font-weight:700;
+      font-size:.91rem; color:var(--ink); cursor:pointer; text-align:left; transition:all .2s;
     }
- 
-    .quiz-opt:hover { border-color: var(--green); background: var(--green-lite); }
-    .quiz-opt.correct { background: #dcfce7; border-color: #16a34a; color: #14532d; }
-    .quiz-opt.wrong   { background: #fee2e2; border-color: #dc2626; color: #7f1d1d; }
- 
-    .quiz-feedback {
-      margin-top: 16px;
-      padding: 14px 18px;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: .93rem;
-      display: none;
+    .quiz-opt:hover { border-color:var(--green); background:var(--green-lite); }
+    .quiz-opt.correct { background:#dcfce7; border-color:#16a34a; color:#14532d; }
+    .quiz-opt.wrong   { background:#fee2e2; border-color:#dc2626; color:#7f1d1d; }
+    .quiz-fb {
+      margin-top:14px; padding:13px 16px; border-radius:12px;
+      font-weight:700; font-size:.91rem; display:none;
     }
- 
-    .quiz-feedback.show { display: block; animation: fadeScreen .3s ease; }
-    .quiz-feedback.good { background: #dcfce7; color: #14532d; }
-    .quiz-feedback.bad  { background: #fee2e2; color: #7f1d1d; }
- 
-    .quiz-next {
-      background: var(--green);
-      color: white;
-      border: none;
-      font-family: 'Fredoka One', cursive;
-      font-size: 1rem;
-      padding: 12px 28px;
-      border-radius: 12px;
-      cursor: pointer;
-      margin-top: 16px;
-      display: none;
-      transition: background .2s;
+    .quiz-fb.show { display:block; animation:fadeIn .3s ease; }
+    .quiz-fb.good { background:#dcfce7; color:#14532d; }
+    .quiz-fb.bad  { background:#fee2e2; color:#7f1d1d; }
+    .quiz-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+    .quiz-next { display:none; }
+    .quiz-next.show { display:inline-block; }
+
+    /* CHALLENGES */
+    .challenge-list { display:grid; gap:16px; }
+    .challenge-card {
+      background:var(--surface); border-radius:18px;
+      padding:24px; box-shadow:var(--shadow); position:relative; overflow:hidden;
     }
- 
-    .quiz-next.show { display: inline-block; }
-    .quiz-next:hover { background: var(--green-dark); }
- 
-    /* ═══════════════════════════════════════════
-       ██ SCREEN: ESCAPE ROOM ENTRY
-    ═══════════════════════════════════════════ */
-    .escape-hero {
-      background: linear-gradient(160deg, #1e1b4b 0%, #312e81 40%, #1e3a5f 100%);
-      min-height: calc(100vh - 58px);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 40px 24px;
-      position: relative;
-      overflow: hidden;
+    .challenge-card::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:var(--c-color,var(--green)); }
+    .ch-tag {
+      display:inline-block; background:var(--green-lite); color:var(--green-dark);
+      font-size:.68rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+      padding:3px 10px; border-radius:50px; margin-bottom:10px;
     }
- 
-    .escape-hero::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background-image: radial-gradient(circle at 20% 30%, rgba(99,102,241,.25) 0%, transparent 50%),
-                        radial-gradient(circle at 80% 70%, rgba(245,158,11,.15) 0%, transparent 50%);
-      pointer-events: none;
+    .challenge-card h3 { font-family:'Fredoka One',cursive; font-size:1.1rem; color:var(--ink); margin-bottom:6px; }
+    .challenge-card p { color:var(--slate); font-size:.9rem; margin-bottom:14px; }
+    .ch-input {
+      width:100%; padding:10px 14px; border:2px solid var(--border);
+      border-radius:10px; font-family:'Nunito',sans-serif; font-size:.92rem;
+      font-weight:600; color:var(--ink); background:var(--bg); outline:none;
+      transition:border-color .2s; resize:vertical; min-height:60px;
+      margin-bottom:10px;
     }
- 
-    .stars-bg {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
+    .ch-input:focus { border-color:var(--green); }
+    .ch-tracker { display:flex; gap:5px; flex-wrap:wrap; margin:10px 0; }
+    .ch-day {
+      width:32px; height:32px; border-radius:8px; border:2px solid var(--border);
+      background:var(--bg); font-size:.7rem; font-weight:800; color:var(--slate);
+      cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center;
     }
- 
-    .star {
-      position: absolute;
-      background: white;
-      border-radius: 50%;
-      animation: twinkle ease-in-out infinite;
+    .ch-day.done { background:var(--green); border-color:var(--green); color:white; }
+    .ch-saved { background:#dcfce7; border:1px solid #86efac; border-radius:10px; padding:10px 14px; margin-top:8px; font-size:.88rem; color:#14532d; font-weight:700; display:none; }
+    .ch-saved.show { display:block; }
+
+    /* CASE STUDY */
+    .case-box { background:var(--surface); border-radius:20px; padding:28px; box-shadow:var(--shadow); }
+    .case-box h3 { font-family:'Fredoka One',cursive; font-size:1.2rem; color:var(--green-dark); margin-bottom:14px; }
+    [data-theme="dark"] .case-box h3 { color:var(--green-glow); }
+    .case-input-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+    .case-input-row label { flex:1; min-width:150px; font-weight:700; font-size:.88rem; color:var(--slate); }
+    .case-input-row input {
+      width:120px; padding:9px 12px; border:2px solid var(--border); border-radius:10px;
+      font-family:'Nunito',sans-serif; font-size:.95rem; font-weight:700;
+      color:var(--ink); background:var(--bg); outline:none; transition:border-color .2s;
     }
- 
-    @keyframes twinkle {
-      0%, 100% { opacity: .2; }
-      50%       { opacity: .9; }
+    .case-input-row input:focus { border-color:var(--green); }
+    .ai-response {
+      margin-top:18px; background:var(--bg2); border-radius:14px;
+      padding:20px; border-left:4px solid var(--green); display:none;
     }
- 
-    .escape-badge {
-      display: inline-block;
-      background: rgba(245,158,11,.2);
-      border: 1px solid rgba(245,158,11,.5);
-      color: var(--gold);
-      font-size: .72rem;
-      font-weight: 800;
-      letter-spacing: .2em;
-      text-transform: uppercase;
-      padding: 6px 20px;
-      border-radius: 50px;
-      margin-bottom: 22px;
+    .ai-response.show { display:block; animation:fadeIn .4s ease; }
+    .ai-response .ai-header { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+    .ai-response .ai-header img { width:36px; height:36px; }
+    .ai-response .ai-header span { font-family:'Fredoka One',cursive; font-size:1rem; color:var(--green-dark); }
+    [data-theme="dark"] .ai-response .ai-header span { color:var(--green-glow); }
+    .ai-text { color:var(--ink); font-size:.93rem; line-height:1.7; }
+    .ai-loading { display:flex; align-items:center; gap:8px; color:var(--slate); font-weight:700; }
+    .spinner { width:18px; height:18px; border:3px solid var(--border); border-top-color:var(--green); border-radius:50%; animation:spin .7s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* ══════════════════════════════════════
+       MURO COMUNITARIO
+    ══════════════════════════════════════ */
+    .wall-login-box {
+      text-align:center; background:var(--surface); border-radius:20px;
+      padding:44px 28px; box-shadow:var(--shadow); max-width:480px; margin:0 auto;
     }
- 
-    .escape-hero h1 {
-      font-family: 'Fredoka One', cursive;
-      font-size: clamp(2.2rem, 6vw, 4rem);
-      color: white;
-      line-height: 1.1;
-      margin-bottom: 10px;
+    .wall-login-box h3 { font-family:'Fredoka One',cursive; font-size:1.4rem; color:var(--green-dark); margin-bottom:10px; }
+    [data-theme="dark"] .wall-login-box h3 { color:var(--green-glow); }
+    .wall-login-box p { color:var(--slate); font-size:.93rem; margin-bottom:22px; }
+    .google-btn {
+      display:inline-flex; align-items:center; gap:10px;
+      background:white; color:#3c4043; border:1.5px solid #dadce0;
+      font-family:'Nunito',sans-serif; font-weight:700; font-size:.95rem;
+      padding:11px 24px; border-radius:12px; cursor:pointer; transition:all .2s;
+      box-shadow:0 2px 8px rgba(0,0,0,.08);
     }
- 
-    .escape-hero h1 .gold { color: var(--gold); }
- 
-    .escape-hero p {
-      color: rgba(255,255,255,.75);
-      font-size: 1.05rem;
-      max-width: 520px;
-      margin: 0 auto 36px;
-      line-height: 1.65;
+    .google-btn:hover { box-shadow:0 4px 14px rgba(0,0,0,.15); transform:translateY(-1px); }
+    .google-btn img { width:20px; }
+
+    .wall-form {
+      background:var(--surface); border-radius:18px;
+      padding:26px; box-shadow:var(--shadow); margin-bottom:24px;
     }
- 
-    .escape-start-btn {
-      background: linear-gradient(135deg, var(--gold), #f97316);
-      color: white;
-      border: none;
-      font-family: 'Fredoka One', cursive;
-      font-size: 1.3rem;
-      padding: 18px 48px;
-      border-radius: 18px;
-      cursor: pointer;
-      box-shadow: 0 8px 32px rgba(245,158,11,.4);
-      transition: all .25s cubic-bezier(.34,1.56,.64,1);
-      letter-spacing: .04em;
+    .wall-form h3 { font-family:'Fredoka One',cursive; font-size:1.1rem; color:var(--green-dark); margin-bottom:14px; }
+    [data-theme="dark"] .wall-form h3 { color:var(--green-glow); }
+    .wall-form select, .wall-form textarea {
+      width:100%; padding:10px 14px; border:2px solid var(--border); border-radius:10px;
+      font-family:'Nunito',sans-serif; font-size:.92rem; font-weight:600;
+      color:var(--ink); background:var(--bg); outline:none; transition:border-color .2s;
+      margin-bottom:10px;
     }
- 
-    .escape-start-btn:hover {
-      transform: translateY(-4px) scale(1.05);
-      box-shadow: 0 14px 40px rgba(245,158,11,.55);
+    .wall-form select:focus, .wall-form textarea:focus { border-color:var(--green); }
+    .wall-form textarea { resize:vertical; min-height:70px; }
+
+    .wall-posts { display:grid; gap:14px; margin-top:8px; }
+    .wall-post {
+      background:var(--surface); border-radius:16px;
+      padding:18px 20px; box-shadow:var(--shadow);
+      border-left:4px solid var(--green); animation:fadeIn .4s ease;
     }
- 
-    .escape-info-grid {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-top: 40px;
+    .wall-post-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .wall-post-avatar { width:36px; height:36px; border-radius:50%; object-fit:cover; }
+    .wall-post-name { font-weight:800; font-size:.9rem; color:var(--ink); }
+    .wall-post-time { font-size:.75rem; color:var(--slate); }
+    .wall-post-tag {
+      display:inline-block; background:var(--green-lite); color:var(--green-dark);
+      font-size:.68rem; font-weight:800; padding:2px 9px; border-radius:50px; margin-bottom:6px;
     }
- 
-    .escape-info-item {
-      background: rgba(255,255,255,.1);
-      border: 1px solid rgba(255,255,255,.2);
-      border-radius: 14px;
-      padding: 16px 22px;
-      color: white;
-      text-align: center;
-      min-width: 130px;
+    .wall-post-text { color:var(--slate); font-size:.91rem; line-height:1.6; }
+    .wall-post-delete {
+      background:none; border:none; color:var(--red); font-size:.78rem;
+      font-weight:700; cursor:pointer; margin-top:6px; padding:0;
     }
- 
-    .escape-info-item .eii-val {
-      font-family: 'Fredoka One', cursive;
-      font-size: 1.5rem;
-      color: var(--gold);
+    .wall-empty { text-align:center; color:var(--slate); padding:40px; font-size:.95rem; }
+
+    /* ══════════════════════════════════════
+       GLOSARIO
+    ══════════════════════════════════════ */
+    .glossary-search {
+      width:100%; padding:12px 18px; border:2px solid var(--border); border-radius:12px;
+      font-family:'Nunito',sans-serif; font-size:1rem; font-weight:600;
+      color:var(--ink); background:var(--bg); outline:none; margin-bottom:22px;
+      transition:border-color .2s;
     }
- 
-    .escape-info-item .eii-label {
-      font-size: .75rem;
-      color: rgba(255,255,255,.65);
-      font-weight: 700;
+    .glossary-search:focus { border-color:var(--green); }
+    .glossary-grid { display:grid; gap:12px; }
+    .glossary-item {
+      background:var(--surface); border-radius:14px; padding:18px 20px;
+      box-shadow:var(--shadow); border-left:3px solid var(--green);
+      transition:transform .15s;
     }
- 
-    /* ═══════════════════════════════════════════
-       ██ SCREEN: RECURSOS
-    ═══════════════════════════════════════════ */
+    .glossary-item:hover { transform:translateX(5px); }
+    .glossary-item h4 { font-family:'Fredoka One',cursive; font-size:1rem; color:var(--green-dark); margin-bottom:5px; }
+    [data-theme="dark"] .glossary-item h4 { color:var(--green-glow); }
+    .glossary-item p { color:var(--slate); font-size:.9rem; }
+
+    /* ══════════════════════════════════════
+       RECURSOS
+    ══════════════════════════════════════ */
     .resource-card {
-      background: white;
-      border-radius: 20px;
-      padding: 26px 24px;
-      box-shadow: var(--card-shadow);
-      display: flex;
-      gap: 18px;
-      align-items: flex-start;
-      margin-bottom: 16px;
-      transition: transform .2s;
+      background:var(--surface); border-radius:18px; padding:22px 20px;
+      box-shadow:var(--shadow); display:flex; gap:16px; align-items:flex-start;
+      margin-bottom:14px; transition:transform .2s;
     }
- 
-    .resource-card:hover { transform: translateX(6px); }
- 
-    .resource-icon {
-      width: 54px; height: 54px;
-      border-radius: 14px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.6rem;
-      flex-shrink: 0;
-    }
- 
-    .resource-card h3 {
-      font-family: 'Fredoka One', cursive;
-      font-size: 1.05rem;
-      color: var(--green-dark);
-      margin-bottom: 5px;
-    }
- 
-    .resource-card p { color: var(--slate); font-size: .9rem; }
- 
+    .resource-card:hover { transform:translateX(5px); }
+    .resource-icon { width:50px; height:50px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; flex-shrink:0; }
+    .resource-card h3 { font-family:'Fredoka One',cursive; font-size:1rem; color:var(--green-dark); margin-bottom:4px; }
+    [data-theme="dark"] .resource-card h3 { color:var(--green-glow); }
+    .resource-card p { color:var(--slate); font-size:.88rem; margin-bottom:8px; }
     .resource-link {
-      display: inline-block;
-      margin-top: 10px;
-      color: var(--green);
-      font-weight: 800;
-      font-size: .85rem;
-      text-decoration: none;
-      border-bottom: 2px solid transparent;
-      transition: border-color .2s;
+      display:inline-block; color:var(--green); font-weight:800; font-size:.83rem;
+      text-decoration:none; border-bottom:2px solid transparent; transition:border-color .2s;
     }
- 
-    .resource-link:hover { border-color: var(--green); }
- 
-    /* ═══════════════════════════════════════════
+    .resource-link:hover { border-color:var(--green); }
+
+    .tip-rotator {
+      background:var(--green-deep); color:white; border-radius:18px;
+      padding:24px 28px; margin-bottom:28px; position:relative; overflow:hidden;
+    }
+    .tip-rotator h3 { font-family:'Fredoka One',cursive; font-size:1rem; color:var(--green-glow); margin-bottom:8px; }
+    .tip-text { color:rgba(255,255,255,.85); font-size:.95rem; line-height:1.65; font-weight:600; min-height:48px; transition:opacity .3s; }
+
+    /* ══════════════════════════════════════
+       ESCAPE ROOM ENTRY
+    ══════════════════════════════════════ */
+    .escape-hero {
+      background:linear-gradient(160deg, #1e1b4b 0%, #312e81 40%, #1e3a5f 100%);
+      min-height:calc(100vh - 58px);
+      display:flex; flex-direction:column; align-items:center;
+      justify-content:center; text-align:center; padding:40px 20px;
+      position:relative; overflow:hidden;
+    }
+    .stars-bg { position:absolute; inset:0; pointer-events:none; }
+    .star { position:absolute; background:white; border-radius:50%; animation:twinkle ease-in-out infinite; }
+    @keyframes twinkle { 0%,100%{opacity:.15} 50%{opacity:.9} }
+    .escape-badge {
+      display:inline-block; background:rgba(245,158,11,.2);
+      border:1px solid rgba(245,158,11,.5); color:var(--gold);
+      font-size:.7rem; font-weight:800; letter-spacing:.18em; text-transform:uppercase;
+      padding:5px 18px; border-radius:50px; margin-bottom:18px;
+    }
+    .escape-hero h1 {
+      font-family:'Fredoka One',cursive;
+      font-size:clamp(2rem,6vw,3.8rem); color:white; line-height:1.1; margin-bottom:10px;
+    }
+    .escape-hero h1 .gold { color:var(--gold); }
+    .escape-hero p { color:rgba(255,255,255,.73); font-size:1rem; max-width:500px; margin:0 auto 32px; }
+    .escape-start {
+      background:linear-gradient(135deg,var(--gold),#f97316); color:white; border:none;
+      font-family:'Fredoka One',cursive; font-size:1.2rem; padding:16px 44px;
+      border-radius:16px; cursor:pointer; box-shadow:0 8px 28px rgba(245,158,11,.4);
+      transition:all .25s cubic-bezier(.34,1.56,.64,1); letter-spacing:.04em;
+    }
+    .escape-start:hover { transform:translateY(-4px) scale(1.05); box-shadow:0 14px 36px rgba(245,158,11,.55); }
+    .escape-stats { display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-top:36px; }
+    .escape-stat {
+      background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.18);
+      border-radius:12px; padding:14px 20px; color:white; text-align:center; min-width:110px;
+    }
+    .escape-stat .es-val { font-family:'Fredoka One',cursive; font-size:1.4rem; color:var(--gold); }
+    .escape-stat .es-lbl { font-size:.72rem; color:rgba(255,255,255,.6); font-weight:700; }
+
+    /* ══════════════════════════════════════
        FOOTER
-    ═══════════════════════════════════════════ */
+    ══════════════════════════════════════ */
     footer {
-      background: var(--green-deep);
-      color: rgba(255,255,255,.55);
-      text-align: center;
-      padding: 28px 20px;
-      font-size: .84rem;
+      background:var(--green-deep); color:rgba(255,255,255,.5);
+      text-align:center; padding:26px 20px; font-size:.82rem;
     }
- 
-    footer span { color: var(--green-glow); font-weight: 700; }
- 
-    /* ═══════════════════════════════════════════
+    footer span { color:var(--green-glow); font-weight:700; }
+
+    /* ══════════════════════════════════════
        RESPONSIVE
-    ═══════════════════════════════════════════ */
-    @media (max-width: 600px) {
-      .nav-links { display: none; }
-      .menu-grid { grid-template-columns: repeat(2, 1fr); }
-      .budget-tool { padding: 22px 18px; }
-      .speech-bubble { display: none; }
+    ══════════════════════════════════════ */
+    @media(max-width:600px) {
+      .menu-grid { grid-template-columns:repeat(2,1fr); }
+      .speech-bubble { display:none; }
+      .budget-box { padding:18px; }
+      .b-row { flex-direction:column; align-items:flex-start; }
+      .b-row input { width:100%; }
     }
   </style>
 </head>
 <body>
- 
-<!-- ═══════════════════════════════ NAVBAR ═══ -->
+
+<!-- ══════════════════ NAVBAR ══════════════════ -->
 <nav class="navbar">
   <div class="nav-brand" onclick="goTo('home')">
-    <!-- mini mascot in nav -->
-    <svg class="nav-logo" viewBox="0 0 60 60" fill="none">
-      <circle cx="30" cy="30" r="28" fill="#f59e0b"/>
-      <circle cx="30" cy="30" r="22" fill="#fbbf24"/>
-      <text x="30" y="38" text-anchor="middle" font-size="22" font-weight="bold" fill="#78350f">$</text>
-    </svg>
+    <svg class="nav-logo" viewBox="0 0 60 60"><circle cx="30" cy="30" r="28" fill="#f59e0b"/><circle cx="30" cy="30" r="22" fill="#fbbf24"/><text x="30" y="38" text-anchor="middle" font-size="22" font-weight="bold" fill="#78350f">$</text></svg>
     <span class="nav-title">Control y <span>Ahorro</span></span>
   </div>
   <div class="nav-links">
@@ -993,661 +670,748 @@
     <button class="nav-btn"        id="nav-aprende"     onclick="goTo('aprende')">Aprende</button>
     <button class="nav-btn"        id="nav-organiza"    onclick="goTo('organiza')">Organiza</button>
     <button class="nav-btn"        id="nav-interactiva" onclick="goTo('interactiva')">Zona Interactiva</button>
-    <button class="nav-btn"        id="nav-escape"      onclick="goTo('escape')">🎮 Escape Room</button>
+    <button class="nav-btn"        id="nav-muro"        onclick="goTo('muro')">🌍 Muro</button>
+    <button class="nav-btn"        id="nav-glosario"    onclick="goTo('glosario')">Glosario</button>
     <button class="nav-btn"        id="nav-recursos"    onclick="goTo('recursos')">Recursos</button>
+    <button class="nav-btn"        id="nav-escape"      onclick="goTo('escape')">🔐 Escape Room</button>
+  </div>
+  <div class="nav-right">
+    <button class="dark-toggle" id="darkToggle" onclick="toggleDark()" title="Modo oscuro">🌙</button>
+    <img id="userAvatar" class="user-avatar" src="" alt="" title="Cerrar sesión" onclick="signOut()">
+    <button class="login-btn" id="loginBtn" onclick="signInGoogle()">Entrar con Google</button>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </nav>
- 
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="nav-btn" onclick="goTo('home');toggleMenu()">🏠 Inicio</button>
+  <button class="nav-btn" onclick="goTo('aprende');toggleMenu()">📖 Aprende</button>
+  <button class="nav-btn" onclick="goTo('organiza');toggleMenu()">🗂️ Organiza</button>
+  <button class="nav-btn" onclick="goTo('interactiva');toggleMenu()">🎯 Zona Interactiva</button>
+  <button class="nav-btn" onclick="goTo('muro');toggleMenu()">🌍 Muro Comunitario</button>
+  <button class="nav-btn" onclick="goTo('glosario');toggleMenu()">📖 Glosario</button>
+  <button class="nav-btn" onclick="goTo('recursos');toggleMenu()">📚 Recursos</button>
+  <button class="nav-btn" onclick="goTo('escape');toggleMenu()">🔐 Escape Room</button>
+</div>
+
 <div class="page">
- 
-<!-- ════════════════════════════════════════════
-     SCREEN: HOME
-════════════════════════════════════════════ -->
+
+<!-- ══════════════════ HOME ══════════════════ -->
 <div id="screen-home" class="screen active">
   <div class="hero">
-    <!-- floating coins -->
     <div class="coins-bg" id="coinsBg"></div>
- 
-    <!-- mascot -->
     <div class="mascot-wrap">
-      <svg class="mascot-svg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- coin body -->
+      <svg class="mascot-big" viewBox="0 0 200 200" fill="none">
         <circle cx="100" cy="110" r="78" fill="#f59e0b"/>
         <circle cx="100" cy="110" r="68" fill="#fbbf24"/>
-        <circle cx="100" cy="110" r="60" fill="#fde68a" opacity=".5"/>
-        <!-- coin shine -->
-        <ellipse cx="75" cy="82" rx="14" ry="8" fill="white" opacity=".3" transform="rotate(-30 75 82)"/>
-        <!-- eyes -->
-        <circle cx="82" cy="100" r="10" fill="white"/>
-        <circle cx="118" cy="100" r="10" fill="white"/>
-        <circle cx="85" cy="102" r="5.5" fill="#1e293b"/>
-        <circle cx="121" cy="102" r="5.5" fill="#1e293b"/>
-        <circle cx="87" cy="100" r="2" fill="white"/>
-        <circle cx="123" cy="100" r="2" fill="white"/>
-        <!-- eyebrows -->
+        <circle cx="100" cy="110" r="60" fill="#fde68a" opacity=".4"/>
+        <ellipse cx="75" cy="82" rx="13" ry="7" fill="white" opacity=".3" transform="rotate(-30 75 82)"/>
+        <circle cx="82" cy="100" r="10" fill="white"/><circle cx="118" cy="100" r="10" fill="white"/>
+        <circle cx="85" cy="102" r="5.5" fill="#1e293b"/><circle cx="121" cy="102" r="5.5" fill="#1e293b"/>
+        <circle cx="87" cy="100" r="2" fill="white"/><circle cx="123" cy="100" r="2" fill="white"/>
         <path d="M74 88 Q82 83 90 88" stroke="#78350f" stroke-width="3" stroke-linecap="round" fill="none"/>
         <path d="M110 88 Q118 83 126 88" stroke="#78350f" stroke-width="3" stroke-linecap="round" fill="none"/>
-        <!-- smile -->
         <path d="M82 122 Q100 138 118 122" stroke="#78350f" stroke-width="3.5" stroke-linecap="round" fill="none"/>
-        <!-- cheeks -->
-        <circle cx="68" cy="118" r="9" fill="#f97316" opacity=".35"/>
-        <circle cx="132" cy="118" r="9" fill="#f97316" opacity=".35"/>
-        <!-- $ symbol -->
-        <text x="100" y="152" text-anchor="middle" font-size="18" font-weight="900" fill="#92400e" font-family="Arial">$</text>
-        <!-- graduation cap -->
+        <circle cx="68" cy="118" r="9" fill="#f97316" opacity=".3"/>
+        <circle cx="132" cy="118" r="9" fill="#f97316" opacity=".3"/>
+        <text x="100" y="152" text-anchor="middle" font-size="17" font-weight="900" fill="#92400e" font-family="Arial">$</text>
         <rect x="72" y="28" width="56" height="10" rx="3" fill="#1e293b"/>
         <polygon points="100,10 130,28 100,35 70,28" fill="#1e293b"/>
         <line x1="130" y1="28" x2="138" y2="44" stroke="#1e293b" stroke-width="2.5"/>
         <circle cx="138" cy="46" r="4" fill="#ef4444"/>
-        <!-- arms -->
         <path d="M28 130 Q18 110 32 100" stroke="#f59e0b" stroke-width="12" stroke-linecap="round" fill="none"/>
         <path d="M172 130 Q182 110 168 100" stroke="#f59e0b" stroke-width="12" stroke-linecap="round" fill="none"/>
-        <!-- hands / wave -->
         <circle cx="28" cy="132" r="10" fill="#fbbf24"/>
         <circle cx="172" cy="132" r="10" fill="#fbbf24"/>
       </svg>
-      <div class="speech-bubble">¡Hola! Soy <b>Monedín</b> 👋<br>¡Aprende a cuidar tu dinero!</div>
+      <div class="speech-bubble" id="heroBubble">¡Hola! Soy <b>Monedín</b> 👋<br>¡Aprende a cuidar tu dinero!</div>
     </div>
- 
     <span class="hero-badge">CBTIS 76 · Proyecto Educativo</span>
     <h1>Control y <span class="accent">Ahorro</span></h1>
     <p class="hero-sub">Tu guía interactiva para aprender a manejar tu dinero y tomar mejores decisiones financieras.</p>
- 
-    <!-- MAIN MENU CARDS -->
     <div class="menu-grid">
-      <div class="menu-card" style="--card-color:#0f766e" onclick="goTo('aprende')">
-        <span class="menu-card-icon">📖</span>
-        <div class="menu-card-title">Aprende</div>
-        <div class="menu-card-desc">Conceptos básicos de finanzas</div>
-      </div>
-      <div class="menu-card" style="--card-color:#0284c7" onclick="goTo('organiza')">
-        <span class="menu-card-icon">🗂️</span>
-        <div class="menu-card-title">Organiza</div>
-        <div class="menu-card-desc">Calculadora de presupuesto</div>
-      </div>
-      <div class="menu-card" style="--card-color:#7c3aed" onclick="goTo('interactiva')">
-        <span class="menu-card-icon">🎯</span>
-        <div class="menu-card-title">Zona Interactiva</div>
-        <div class="menu-card-desc">Retos y quizzes</div>
-      </div>
-      <div class="menu-card" style="--card-color:#d97706" onclick="goTo('escape')">
-        <span class="card-badge">¡NUEVO!</span>
-        <span class="menu-card-icon">🔐</span>
-        <div class="menu-card-title">Escape Room</div>
-        <div class="menu-card-desc">Misión: Saldo a Favor</div>
-      </div>
-      <div class="menu-card" style="--card-color:#dc2626" onclick="goTo('recursos')">
-        <span class="menu-card-icon">📚</span>
-        <div class="menu-card-title">Recursos</div>
-        <div class="menu-card-desc">Consejos y materiales</div>
-      </div>
+      <div class="menu-card" onclick="goTo('aprende')"><span class="menu-card-icon">📖</span><div class="menu-card-title">Aprende</div><div class="menu-card-desc">Conceptos básicos</div></div>
+      <div class="menu-card" onclick="goTo('organiza')"><span class="menu-card-icon">🗂️</span><div class="menu-card-title">Organiza</div><div class="menu-card-desc">Calculadoras</div></div>
+      <div class="menu-card" onclick="goTo('interactiva')"><span class="menu-card-icon">🎯</span><div class="menu-card-title">Zona Interactiva</div><div class="menu-card-desc">Quiz y retos</div></div>
+      <div class="menu-card" onclick="goTo('muro')"><span class="menu-card-icon">🌍</span><div class="menu-card-title">Muro</div><div class="menu-card-desc">Compromisos del grupo</div></div>
+      <div class="menu-card" onclick="goTo('glosario')"><span class="menu-card-icon">📒</span><div class="menu-card-title">Glosario</div><div class="menu-card-desc">Términos financieros</div></div>
+      <div class="menu-card" onclick="goTo('recursos')"><span class="menu-card-icon">📚</span><div class="menu-card-title">Recursos</div><div class="menu-card-desc">Videos y links</div></div>
+      <div class="menu-card" onclick="goTo('escape')" style="grid-column:span 1"><span class="card-new">¡NUEVO!</span><span class="menu-card-icon">🔐</span><div class="menu-card-title">Escape Room</div><div class="menu-card-desc">Misión: Saldo a Favor</div></div>
     </div>
   </div>
 </div>
- 
-<!-- ════════════════════════════════════════════
-     SCREEN: APRENDE
-════════════════════════════════════════════ -->
+
+<!-- ══════════════════ APRENDE ══════════════════ -->
 <div id="screen-aprende" class="screen">
-  <div class="section-hero">
-    <h1>📖 Aprende sobre tus Finanzas</h1>
-    <p>Monedín te explica todo lo que necesitas saber sobre el dinero, ¡paso a paso!</p>
-  </div>
+  <div class="section-hero"><h1>📖 Aprende sobre tus Finanzas</h1><p>Monedín te explica todo lo que necesitas saber sobre el dinero.</p></div>
   <div class="section-body">
-    <button class="back-btn" onclick="goTo('home')">← Regresar al inicio</button>
- 
-    <!-- topic tabs -->
-    <div style="margin-bottom:28px;">
-      <button class="topic-btn active" onclick="showTopic('ingresos', this)">💰 Ingresos y Gastos</button>
-      <button class="topic-btn" onclick="showTopic('presupuesto', this)">📊 Presupuesto</button>
-      <button class="topic-btn" onclick="showTopic('hormiga', this)">🐜 Gasto Hormiga</button>
-      <button class="topic-btn" onclick="showTopic('ahorro', this)">🏦 Metas de Ahorro</button>
+    <button class="back-btn" onclick="goTo('home')">← Inicio</button>
+    <div class="topic-tabs">
+      <button class="topic-btn active" onclick="showTopic('ingresos',this)">💰 Ingresos y Gastos</button>
+      <button class="topic-btn" onclick="showTopic('presupuesto',this)">📊 Presupuesto</button>
+      <button class="topic-btn" onclick="showTopic('hormiga',this)">🐜 Gasto Hormiga</button>
+      <button class="topic-btn" onclick="showTopic('ahorro',this)">🏦 Ahorro</button>
     </div>
- 
-    <!-- TOPIC: INGRESOS -->
+
+    <!-- INGRESOS -->
     <div id="topic-ingresos" class="topic-content active">
-      <div class="comic-panel">
-        <div class="comic-header">🗣️ Monedín explica...</div>
-        <div class="comic-body">
-          <svg class="comic-mascot" viewBox="0 0 100 100"><circle cx="50" cy="55" r="38" fill="#f59e0b"/><circle cx="50" cy="55" r="30" fill="#fbbf24"/><circle cx="38" cy="48" r="7" fill="white"/><circle cx="62" cy="48" r="7" fill="white"/><circle cx="40" cy="50" r="3.5" fill="#1e293b"/><circle cx="64" cy="50" r="3.5" fill="#1e293b"/><path d="M38 66 Q50 76 62 66" stroke="#78350f" stroke-width="2.5" stroke-linecap="round" fill="none"/><rect x="34" y="16" width="32" height="7" rx="2" fill="#1e293b"/><polygon points="50,6 66,16 50,19 34,16" fill="#1e293b"/></svg>
-          <div class="comic-dialogue">
-            <p>Los <span class="highlight-word">ingresos</span> son todo el dinero que recibes: mesada, trabajo, regalos. Los <span class="highlight-word">gastos</span> son en lo que lo usas. ¡La clave es que tus ingresos sean mayores que tus gastos!</p>
-          </div>
+      <div class="comic-panel"><div class="comic-header">🗣️ Monedín explica...</div>
+        <div class="comic-body"><svg class="mmascot" viewBox="0 0 100 100"><circle cx="50" cy="55" r="38" fill="#f59e0b"/><circle cx="50" cy="55" r="30" fill="#fbbf24"/><circle cx="38" cy="48" r="7" fill="white"/><circle cx="62" cy="48" r="7" fill="white"/><circle cx="40" cy="50" r="3.5" fill="#1e293b"/><circle cx="64" cy="50" r="3.5" fill="#1e293b"/><path d="M38 66 Q50 76 62 66" stroke="#78350f" stroke-width="2.5" stroke-linecap="round" fill="none"/><rect x="34" y="16" width="32" height="7" rx="2" fill="#1e293b"/><polygon points="50,6 66,16 50,19 34,16" fill="#1e293b"/></svg>
+          <div class="comic-dialogue"><p>Los <span class="hw">ingresos</span> son todo el dinero que recibes. Los <span class="hw">gastos</span> son en lo que lo usas. ¡La clave es que tus ingresos siempre sean mayores que tus gastos! 💡</p></div>
         </div>
       </div>
- 
-      <div class="content-grid">
-        <div class="content-card">
-          <span class="card-emoji">💵</span>
-          <h3>¿Qué son los ingresos?</h3>
-          <p>Son todas las entradas de dinero que tienes. Puede ser tu mesada, lo que ganas trabajando los fines de semana, o dinero que te regalan en tu cumpleaños.</p>
-        </div>
-        <div class="content-card">
-          <span class="card-emoji">🛒</span>
-          <h3>¿Qué son los gastos?</h3>
-          <p>Son todo aquello en lo que gastas tu dinero: comida, transporte, entretenimiento, ropa. Se dividen en <b>necesarios</b> (comida, pasajes) y <b>opcionales</b> (antojo, videojuegos).</p>
-        </div>
-        <div class="content-card">
-          <span class="card-emoji">⚖️</span>
-          <h3>El equilibrio financiero</h3>
-          <p>Tu meta es que al final del mes te sobre dinero. Si gastas más de lo que ganas, entras en desequilibrio. Si te sobra, ¡ese dinero puede ir al ahorro!</p>
-        </div>
+      <div class="cards">
+        <div class="card"><span class="card-icon">💵</span><h3>¿Qué son los ingresos?</h3><p>Toda entrada de dinero: mesada, trabajo, regalos. Conocerlos te permite saber con cuánto cuentas realmente.</p></div>
+        <div class="card"><span class="card-icon">🛒</span><h3>¿Qué son los gastos?</h3><p>Todo en lo que usas tu dinero. Se dividen en <b>necesarios</b> (comida, transporte) y <b>opcionales</b> (antojo, entretenimiento).</p></div>
+        <div class="card"><span class="card-icon">⚖️</span><h3>El equilibrio</h3><p>Tu meta es que al final de la semana te sobre dinero. Si te sobra, ¡va al ahorro! Si te falta, hay que revisar gastos.</p></div>
       </div>
- 
-      <div class="gold-box">
-        <h3>💡 Dato importante</h3>
-        <p>Según estudios, el 70% de los jóvenes en México no lleva registro de sus gastos. ¡Solo con anotarlos puedes mejorar tus hábitos financieros!</p>
-      </div>
+      <div class="gold-box" style="margin-top:20px"><h3>💡 Dato</h3><p>El 70% de los jóvenes en México no lleva registro de sus gastos. ¡Solo con anotarlos puedes mejorar tus finanzas!</p></div>
     </div>
- 
-    <!-- TOPIC: PRESUPUESTO -->
+
+    <!-- PRESUPUESTO -->
     <div id="topic-presupuesto" class="topic-content">
-      <div class="comic-panel">
-        <div class="comic-header">🗣️ Monedín explica...</div>
-        <div class="comic-body">
-          <svg class="comic-mascot" viewBox="0 0 100 100"><circle cx="50" cy="55" r="38" fill="#f59e0b"/><circle cx="50" cy="55" r="30" fill="#fbbf24"/><circle cx="38" cy="48" r="7" fill="white"/><circle cx="62" cy="48" r="7" fill="white"/><circle cx="40" cy="50" r="3.5" fill="#1e293b"/><circle cx="64" cy="50" r="3.5" fill="#1e293b"/><path d="M38 66 Q50 76 62 66" stroke="#78350f" stroke-width="2.5" stroke-linecap="round" fill="none"/><rect x="34" y="16" width="32" height="7" rx="2" fill="#1e293b"/><polygon points="50,6 66,16 50,19 34,16" fill="#1e293b"/></svg>
-          <div class="comic-dialogue">
-            <p>Un <span class="highlight-word">presupuesto</span> es como un plan para tu dinero. ¡Decides ANTES cómo vas a usarlo, en lugar de gastar y luego arrepentirte!</p>
-          </div>
+      <div class="comic-panel"><div class="comic-header">🗣️ Monedín explica...</div>
+        <div class="comic-body"><svg class="mmascot" viewBox="0 0 100 100"><circle cx="50" cy="55" r="38" fill="#f59e0b"/><circle cx="50" cy="55" r="30" fill="#fbbf24"/><circle cx="38" cy="48" r="7" fill="white"/><circle cx="62" cy="48" r="7" fill="white"/><circle cx="40" cy="50" r="3.5" fill="#1e293b"/><circle cx="64" cy="50" r="3.5" fill="#1e293b"/><path d="M38 66 Q50 76 62 66" stroke="#78350f" stroke-width="2.5" stroke-linecap="round" fill="none"/><rect x="34" y="16" width="32" height="7" rx="2" fill="#1e293b"/><polygon points="50,6 66,16 50,19 34,16" fill="#1e293b"/></svg>
+          <div class="comic-dialogue"><p>Un <span class="hw">presupuesto</span> es tu plan para el dinero. ¡Decides ANTES cómo vas a usarlo, en lugar de gastar y luego arrepentirte! 📋</p></div>
         </div>
       </div>
- 
-      <div class="content-grid">
-        <div class="content-card">
-          <span class="card-emoji">📝</span>
-          <h3>La regla 50-30-20</h3>
-          <p><b>50%</b> para necesidades (comida, transporte)<br><b>30%</b> para deseos (ocio, ropa)<br><b>20%</b> para ahorro.<br>¡Una fórmula sencilla y efectiva!</p>
-        </div>
-        <div class="content-card">
-          <span class="card-emoji">📅</span>
-          <h3>Presupuesto semanal</h3>
-          <p>Si recibes tu mesada los lunes, divide ese dinero entre los 7 días. Así sabrás exactamente cuánto puedes gastar cada día sin quedarte sin nada.</p>
-        </div>
-        <div class="content-card">
-          <span class="card-emoji">✅</span>
-          <h3>Pasos para hacer tu presupuesto</h3>
-          <p>1. Anota cuánto dinero tienes.<br>2. Haz una lista de tus gastos necesarios.<br>3. Asigna un monto a cada cosa.<br>4. ¡Guarda lo que sobre!</p>
-        </div>
+      <div class="cards">
+        <div class="card"><span class="card-icon">📝</span><h3>Regla 50-30-20</h3><p><b>50%</b> necesidades · <b>30%</b> deseos · <b>20%</b> ahorro. Una fórmula sencilla y muy efectiva para organizar tu dinero.</p></div>
+        <div class="card"><span class="card-icon">📅</span><h3>Presupuesto semanal</h3><p>Divide tu mesada entre 7 días. Así sabrás exactamente cuánto puedes gastar cada día sin quedarte sin nada.</p></div>
+        <div class="card"><span class="card-icon">✅</span><h3>Pasos</h3><p>1. Anota cuánto tienes<br>2. Lista gastos necesarios<br>3. Asigna un monto a cada gasto<br>4. ¡Guarda lo que sobre!</p></div>
       </div>
     </div>
- 
-    <!-- TOPIC: GASTO HORMIGA -->
+
+    <!-- GASTO HORMIGA -->
     <div id="topic-hormiga" class="topic-content">
-      <div class="comic-panel">
-        <div class="comic-header">🗣️ Monedín explica...</div>
-        <div class="comic-body">
-          <svg class="comic-mascot" viewBox="0 0 100 100"><circle cx="50" cy="55" r="38" fill="#f59e0b"/><circle cx="50" cy="55" r="30" fill="#fbbf24"/><circle cx="38" cy="48" r="7" fill="white"/><circle cx="62" cy="48" r="7" fill="white"/><circle cx="40" cy="50" r="3.5" fill="#1e293b"/><circle cx="64" cy="50" r="3.5" fill="#1e293b"/><path d="M42 70 Q50 64 58 70" stroke="#78350f" stroke-width="2.5" stroke-linecap="round" fill="none"/><rect x="34" y="16" width="32" height="7" rx="2" fill="#1e293b"/><polygon points="50,6 66,16 50,19 34,16" fill="#1e293b"/></svg>
-          <div class="comic-dialogue">
-            <p>¡Cuidado! Los <span class="highlight-word">gastos hormiga</span> son pequeños gastos que apenas notas, pero que juntos se comen TODO tu dinero, ¡como hormigas a tu merienda!</p>
-          </div>
+      <div class="comic-panel"><div class="comic-header">🗣️ Monedín explica...</div>
+        <div class="comic-body"><svg class="mmascot" viewBox="0 0 100 100"><circle cx="50" cy="55" r="38" fill="#f59e0b"/><circle cx="50" cy="55" r="30" fill="#fbbf24"/><circle cx="38" cy="48" r="7" fill="white"/><circle cx="62" cy="48" r="7" fill="white"/><circle cx="40" cy="50" r="3.5" fill="#1e293b"/><circle cx="64" cy="50" r="3.5" fill="#1e293b"/><path d="M42 70 Q50 64 58 70" stroke="#78350f" stroke-width="2.5" stroke-linecap="round" fill="none"/><rect x="34" y="16" width="32" height="7" rx="2" fill="#1e293b"/><polygon points="50,6 66,16 50,19 34,16" fill="#1e293b"/></svg>
+          <div class="comic-dialogue"><p>¡Cuidado! Los <span class="hw">gastos hormiga</span> son pequeños gastos que apenas notas, ¡pero que juntos se comen TODO tu dinero! 🐜</p></div>
         </div>
       </div>
- 
-      <div class="highlight-box">
-        <h3>🐜 ¿Qué es el gasto hormiga?</h3>
-        <p>Son pequeños gastos diarios que parecen inofensivos: un refresco ($20), una bolsita de papas ($15), un café ($30)... pero sumados al mes pueden ser <b>más de $1,000 pesos</b> que se van sin que lo notes.</p>
-      </div>
- 
-      <div class="content-grid">
-        <div class="content-card" style="border-top-color:#ef4444">
-          <span class="card-emoji">📱</span>
-          <h3>Ejemplos comunes</h3>
-          <p>• Refresco diario: $20 × 30 días = <b>$600 al mes</b><br>• Snack en recreo: $25 × 20 días = <b>$500 al mes</b><br>• App o suscripción: <b>$200 al mes</b></p>
-        </div>
-        <div class="content-card" style="border-top-color:#16a34a">
-          <span class="card-emoji">🛡️</span>
-          <h3>¿Cómo evitarlos?</h3>
-          <p>• Lleva agua y snacks de casa<br>• Anota TODOS tus gastos, aunque sean pequeños<br>• Pregúntate: "¿Lo necesito o solo lo quiero?"<br>• Establece un límite de gastos menores</p>
-        </div>
+      <div class="highlight"><h3>🐜 ¿Qué es el gasto hormiga?</h3><p>Son pequeños gastos diarios: un refresco ($20), papitas ($15), café ($30)... Sumados al mes pueden ser <b>más de $1,000 pesos</b> que se van sin que lo notes.</p></div>
+      <div class="cards">
+        <div class="card" style="border-top-color:#ef4444"><span class="card-icon">📱</span><h3>Ejemplos comunes</h3><p>• Refresco diario: $20 × 30 días = <b>$600/mes</b><br>• Snack en recreo: $25 × 20 días = <b>$500/mes</b><br>• Apps y suscripciones: <b>$200/mes</b></p></div>
+        <div class="card" style="border-top-color:#16a34a"><span class="card-icon">🛡️</span><h3>¿Cómo evitarlos?</h3><p>• Lleva agua y snacks de casa<br>• Anota TODOS tus gastos<br>• Pregúntate: "¿Lo necesito o lo quiero?"<br>• Establece un límite semanal</p></div>
       </div>
     </div>
- 
-    <!-- TOPIC: AHORRO -->
+
+    <!-- AHORRO -->
     <div id="topic-ahorro" class="topic-content">
-      <div class="comic-panel">
-        <div class="comic-header">🗣️ Monedín explica...</div>
-        <div class="comic-body">
-          <svg class="comic-mascot" viewBox="0 0 100 100"><circle cx="50" cy="55" r="38" fill="#f59e0b"/><circle cx="50" cy="55" r="30" fill="#fbbf24"/><circle cx="38" cy="48" r="7" fill="white"/><circle cx="62" cy="48" r="7" fill="white"/><circle cx="40" cy="50" r="3.5" fill="#1e293b"/><circle cx="64" cy="50" r="3.5" fill="#1e293b"/><path d="M38 66 Q50 76 62 66" stroke="#78350f" stroke-width="2.5" stroke-linecap="round" fill="none"/><rect x="34" y="16" width="32" height="7" rx="2" fill="#1e293b"/><polygon points="50,6 66,16 50,19 34,16" fill="#1e293b"/></svg>
-          <div class="comic-dialogue">
-            <p>Ahorrar no es dejar de disfrutar, ¡es <span class="highlight-word">pagarte a ti primero</span>! Cuando recibes dinero, separa tu ahorro ANTES de gastar en cualquier otra cosa.</p>
-          </div>
+      <div class="comic-panel"><div class="comic-header">🗣️ Monedín explica...</div>
+        <div class="comic-body"><svg class="mmascot" viewBox="0 0 100 100"><circle cx="50" cy="55" r="38" fill="#f59e0b"/><circle cx="50" cy="55" r="30" fill="#fbbf24"/><circle cx="38" cy="48" r="7" fill="white"/><circle cx="62" cy="48" r="7" fill="white"/><circle cx="40" cy="50" r="3.5" fill="#1e293b"/><circle cx="64" cy="50" r="3.5" fill="#1e293b"/><path d="M38 66 Q50 76 62 66" stroke="#78350f" stroke-width="2.5" stroke-linecap="round" fill="none"/><rect x="34" y="16" width="32" height="7" rx="2" fill="#1e293b"/><polygon points="50,6 66,16 50,19 34,16" fill="#1e293b"/></svg>
+          <div class="comic-dialogue"><p>Ahorrar no es dejar de disfrutar, ¡es <span class="hw">pagarte a ti primero</span>! Cuando recibas dinero, separa tu ahorro ANTES de gastar en cualquier otra cosa. 🏦</p></div>
         </div>
       </div>
- 
-      <div class="content-grid">
-        <div class="content-card">
-          <span class="card-emoji">🎯</span>
-          <h3>Define tu meta</h3>
-          <p>El ahorro funciona mejor cuando tienes un objetivo claro: "Quiero ahorrar $500 para comprar audífonos en 4 semanas". ¡Las metas concretas motivan más!</p>
-        </div>
-        <div class="content-card">
-          <span class="card-emoji">🏦</span>
-          <h3>El método del sobre</h3>
-          <p>Separa tu dinero en sobres etiquetados: "Necesidades", "Diversión", "Ahorro". Cuando el sobre de Diversión se vacíe, ¡ya no hay más gastos de ese tipo!</p>
-        </div>
-        <div class="content-card">
-          <span class="card-emoji">📈</span>
-          <h3>Pequeños pasos</h3>
-          <p>Ahorrar $10 al día = $300 al mes = $3,600 al año. No necesitas grandes cantidades, solo <b>constancia</b>. ¡El tiempo es tu mejor aliado!</p>
-        </div>
+      <div class="cards">
+        <div class="card"><span class="card-icon">🎯</span><h3>Define tu meta</h3><p>El ahorro funciona mejor con un objetivo claro: "Quiero ahorrar $500 para audífonos en 4 semanas". ¡Las metas concretas motivan más!</p></div>
+        <div class="card"><span class="card-icon">🏦</span><h3>Método del sobre</h3><p>Separa tu dinero en sobres: "Necesidades", "Diversión", "Ahorro". Cuando el sobre se vacíe, ¡se acabó ese tipo de gasto!</p></div>
+        <div class="card"><span class="card-icon">📈</span><h3>Pequeños pasos</h3><p>$10 al día = $300/mes = $3,600/año. No necesitas mucho, solo <b>constancia</b>. ¡El tiempo es tu mejor aliado!</p></div>
       </div>
     </div>
- 
   </div>
-  <footer><p>Control y Ahorro · <span>CBTIS 76</span> · Con Monedín 🪙</p></footer>
+  <footer><p>Control y Ahorro · <span>CBTIS 76</span></p></footer>
 </div>
- 
-<!-- ════════════════════════════════════════════
-     SCREEN: ORGANIZA (BUDGET CALCULATOR)
-════════════════════════════════════════════ -->
+
+<!-- ══════════════════ ORGANIZA ══════════════════ -->
 <div id="screen-organiza" class="screen">
-  <div class="section-hero">
-    <h1>🗂️ Organiza tu Dinero</h1>
-    <p>Usa la calculadora de presupuesto y descubre si tu dinero te alcanza.</p>
-  </div>
+  <div class="section-hero"><h1>🗂️ Organiza tu Dinero</h1><p>Herramientas para calcular, planear y mejorar tus finanzas.</p></div>
   <div class="section-body">
-    <button class="back-btn" onclick="goTo('home')">← Regresar al inicio</button>
- 
-    <div class="comic-panel" style="margin-bottom:28px;">
-      <div class="comic-header">💬 Consejo de Monedín</div>
-      <div class="comic-body">
-        <svg class="comic-mascot" viewBox="0 0 100 100"><circle cx="50" cy="55" r="38" fill="#f59e0b"/><circle cx="50" cy="55" r="30" fill="#fbbf24"/><circle cx="38" cy="48" r="7" fill="white"/><circle cx="62" cy="48" r="7" fill="white"/><circle cx="40" cy="50" r="3.5" fill="#1e293b"/><circle cx="64" cy="50" r="3.5" fill="#1e293b"/><path d="M38 66 Q50 76 62 66" stroke="#78350f" stroke-width="2.5" stroke-linecap="round" fill="none"/><rect x="34" y="16" width="32" height="7" rx="2" fill="#1e293b"/><polygon points="50,6 66,16 50,19 34,16" fill="#1e293b"/></svg>
-        <div class="comic-dialogue">
-          <p>Ingresa tus ingresos y gastos y <span class="highlight-word">yo te digo si tu presupuesto está en orden</span> 😄 ¡Sé honesto con los montos!</p>
+    <button class="back-btn" onclick="goTo('home')">← Inicio</button>
+    <div class="tool-tabs">
+      <button class="tool-tab active" onclick="showTool('presupuesto-calc',this)">💰 Presupuesto</button>
+      <button class="tool-tab" onclick="showTool('hormiga-calc',this)">🐜 Gasto Hormiga</button>
+      <button class="tool-tab" onclick="showTool('meta-calc',this)">🎯 Meta de Ahorro</button>
+    </div>
+
+    <!-- PRESUPUESTO CALC -->
+    <div id="tool-presupuesto-calc" class="tool-panel active">
+      <div class="comic-panel" style="margin-bottom:20px"><div class="comic-header">💬 Consejo de Monedín</div>
+        <div class="comic-body"><svg class="mmascot" viewBox="0 0 100 100"><circle cx="50" cy="55" r="38" fill="#f59e0b"/><circle cx="50" cy="55" r="30" fill="#fbbf24"/><circle cx="38" cy="48" r="7" fill="white"/><circle cx="62" cy="48" r="7" fill="white"/><circle cx="40" cy="50" r="3.5" fill="#1e293b"/><circle cx="64" cy="50" r="3.5" fill="#1e293b"/><path d="M38 66 Q50 76 62 66" stroke="#78350f" stroke-width="2.5" stroke-linecap="round" fill="none"/><rect x="34" y="16" width="32" height="7" rx="2" fill="#1e293b"/><polygon points="50,6 66,16 50,19 34,16" fill="#1e293b"/></svg>
+          <div class="comic-dialogue"><p>Ingresa tus ingresos y gastos reales y <span class="hw">te digo si tu presupuesto está en orden</span> 😄 ¡Sé honesto!</p></div>
         </div>
+      </div>
+      <div class="budget-box">
+        <h3>💰 Calculadora de Presupuesto Semanal</h3>
+        <div class="b-row"><label>💵 Ingresos semanales</label><input type="number" id="b-ingreso" placeholder="$0" min="0"></div>
+        <div class="b-row"><label>🍔 Comida y bebidas</label><input type="number" id="b-comida" placeholder="$0" min="0"></div>
+        <div class="b-row"><label>🚌 Transporte</label><input type="number" id="b-transporte" placeholder="$0" min="0"></div>
+        <div class="b-row"><label>📚 Material escolar</label><input type="number" id="b-escolar" placeholder="$0" min="0"></div>
+        <div class="b-row"><label>🎮 Entretenimiento</label><input type="number" id="b-entrete" placeholder="$0" min="0"></div>
+        <div class="b-row"><label>🐜 Gastos hormiga</label><input type="number" id="b-hormiga-g" placeholder="$0" min="0"></div>
+        <div class="b-row"><label>🛍️ Otros</label><input type="number" id="b-otros" placeholder="$0" min="0"></div>
+        <button class="btn-green" style="width:100%;margin-top:12px" onclick="calcBudget()">📊 Calcular mi presupuesto</button>
+        <div class="b-result" id="budgetResult">
+          <div class="b-stat"><div class="b-val" id="res-ing">$0</div><div class="b-lbl">Ingresos</div></div>
+          <div class="b-stat"><div class="b-val" id="res-gas">$0</div><div class="b-lbl">Gastos</div></div>
+          <div class="b-stat"><div class="b-val" id="res-sal">$0</div><div class="b-lbl">Saldo</div></div>
+          <div class="b-stat" style="width:100%"><div class="b-lbl" style="margin-bottom:5px">% Gastado</div><div class="bar-wrap"><div class="bar-fill" id="res-bar"></div></div></div>
+        </div>
+      </div>
+      <div id="budget-fb"></div>
+      <div class="gold-box"><h3>💡 Regla 50-30-20</h3><ul><li><b>50%</b> → necesidades (comida, transporte, escuela)</li><li><b>30%</b> → deseos (diversión, ropa)</li><li><b>20%</b> → ahorro (metas)</li></ul></div>
+    </div>
+
+    <!-- HORMIGA CALC -->
+    <div id="tool-hormiga-calc" class="tool-panel">
+      <div class="budget-box">
+        <h3>🐜 Calculadora de Gasto Hormiga</h3>
+        <p style="color:var(--slate);font-size:.9rem;margin-bottom:18px">Ingresa tus gastos pequeños diarios y descubre cuánto suman al mes y al año.</p>
+        <div class="b-row"><label>☕ Café/refresco diario</label><input type="number" id="h-cafe" placeholder="$0" min="0"></div>
+        <div class="b-row"><label>🍟 Snack en recreo</label><input type="number" id="h-snack" placeholder="$0" min="0"></div>
+        <div class="b-row"><label>📱 Apps/suscripciones (diario)</label><input type="number" id="h-apps" placeholder="$0" min="0"></div>
+        <div class="b-row"><label>🚕 Transporte extra</label><input type="number" id="h-taxi" placeholder="$0" min="0"></div>
+        <div class="b-row"><label>🛍️ Otros pequeños gastos</label><input type="number" id="h-otros" placeholder="$0" min="0"></div>
+        <button class="btn-green" style="width:100%;margin-top:12px" onclick="calcHormiga()">🐜 Ver el impacto</button>
+        <div class="b-result" id="hormigaResult">
+          <div class="b-stat"><div class="b-val" id="h-dia">$0</div><div class="b-lbl">Al día</div></div>
+          <div class="b-stat"><div class="b-val" id="h-mes">$0</div><div class="b-lbl">Al mes</div></div>
+          <div class="b-stat"><div class="b-val" id="h-anio">$0</div><div class="b-lbl">Al año 😱</div></div>
+        </div>
+        <div id="hormiga-fb"></div>
       </div>
     </div>
- 
-    <div class="budget-tool">
-      <h3>💰 Calculadora de Presupuesto Semanal</h3>
- 
-      <div class="budget-row">
-        <label>💵 Ingresos semanales (mesada, trabajo, etc.)</label>
-        <input type="number" id="b-ingreso" placeholder="$0.00" min="0">
-      </div>
-      <div class="budget-row">
-        <label>🍔 Comida y bebidas</label>
-        <input type="number" id="b-comida" placeholder="$0.00" min="0">
-      </div>
-      <div class="budget-row">
-        <label>🚌 Transporte</label>
-        <input type="number" id="b-transporte" placeholder="$0.00" min="0">
-      </div>
-      <div class="budget-row">
-        <label>📚 Material escolar</label>
-        <input type="number" id="b-escolar" placeholder="$0.00" min="0">
-      </div>
-      <div class="budget-row">
-        <label>🎮 Entretenimiento</label>
-        <input type="number" id="b-entrete" placeholder="$0.00" min="0">
-      </div>
-      <div class="budget-row">
-        <label>🐜 Gastos hormiga (cafés, snacks)</label>
-        <input type="number" id="b-hormiga" placeholder="$0.00" min="0">
-      </div>
-      <div class="budget-row">
-        <label>🛍️ Otros gastos</label>
-        <input type="number" id="b-otros" placeholder="$0.00" min="0">
-      </div>
- 
-      <button class="calc-btn" onclick="calcBudget()">📊 Calcular mi presupuesto</button>
- 
-      <div class="budget-result" id="budgetResult" style="display:none;">
-        <div class="budget-stat">
-          <div class="stat-val" id="res-ingreso">$0</div>
-          <div class="stat-label">Ingresos</div>
+
+    <!-- META CALC -->
+    <div id="tool-meta-calc" class="tool-panel">
+      <div class="budget-box">
+        <h3>🎯 Calculadora de Meta de Ahorro</h3>
+        <p style="color:var(--slate);font-size:.9rem;margin-bottom:18px">¿Qué quieres comprar? Descubre cuánto necesitas ahorrar cada día.</p>
+        <div class="b-row"><label>🛍️ ¿Qué quieres lograr?</label><input type="text" id="m-nombre" placeholder="Ej: Audífonos"></div>
+        <div class="b-row"><label>💰 ¿Cuánto cuesta?</label><input type="number" id="m-costo" placeholder="$0" min="0"></div>
+        <div class="b-row"><label>📅 ¿En cuántos días?</label><input type="number" id="m-dias" placeholder="Días" min="1"></div>
+        <div class="b-row"><label>💵 ¿Cuánto ya tienes?</label><input type="number" id="m-tengo" placeholder="$0" min="0"></div>
+        <button class="btn-green" style="width:100%;margin-top:12px" onclick="calcMeta()">🎯 Calcular mi plan</button>
+        <div class="b-result" id="metaResult">
+          <div class="b-stat"><div class="b-val" id="m-dia">$0</div><div class="b-lbl">Por día</div></div>
+          <div class="b-stat"><div class="b-val" id="m-sem">$0</div><div class="b-lbl">Por semana</div></div>
+          <div class="b-stat"><div class="b-val" id="m-falta">$0</div><div class="b-lbl">Te falta ahorrar</div></div>
         </div>
-        <div class="budget-stat">
-          <div class="stat-val" id="res-gastos">$0</div>
-          <div class="stat-label">Gastos totales</div>
-        </div>
-        <div class="budget-stat">
-          <div class="stat-val" id="res-ahorro">$0</div>
-          <div class="stat-label">Te queda / te falta</div>
-        </div>
-        <div class="budget-stat" style="width:100%;">
-          <div class="stat-label" style="margin-bottom:6px;">Porcentaje gastado</div>
-          <div class="result-bar-wrap"><div class="result-bar" id="res-bar"></div></div>
+        <div id="meta-progress" style="display:none;margin-top:16px">
+          <p style="font-size:.85rem;font-weight:700;color:var(--slate);margin-bottom:6px">Tu progreso:</p>
+          <div class="bar-wrap" style="background:var(--border);height:14px"><div class="bar-fill" id="m-bar" style="background:var(--green)"></div></div>
+          <p id="m-msg" style="margin-top:8px;font-size:.88rem;font-weight:700;color:var(--green)"></p>
         </div>
       </div>
-    </div>
- 
-    <div id="budget-feedback" style="display:none;"></div>
- 
-    <div class="gold-box">
-      <h3>💡 La regla 50-30-20</h3>
-      <ul>
-        <li><b>50%</b> de tus ingresos → necesidades (comida, transporte, escuela)</li>
-        <li><b>30%</b> de tus ingresos → deseos (diversión, ropa)</li>
-        <li><b>20%</b> de tus ingresos → ahorro (metas a corto y largo plazo)</li>
-      </ul>
     </div>
   </div>
-  <footer><p>Control y Ahorro · <span>CBTIS 76</span> · Con Monedín 🪙</p></footer>
+  <footer><p>Control y Ahorro · <span>CBTIS 76</span></p></footer>
 </div>
- 
-<!-- ════════════════════════════════════════════
-     SCREEN: ZONA INTERACTIVA
-════════════════════════════════════════════ -->
+
+<!-- ══════════════════ ZONA INTERACTIVA ══════════════════ -->
 <div id="screen-interactiva" class="screen">
-  <div class="section-hero" style="background:linear-gradient(135deg,#4c1d95,#7c3aed)">
-    <h1>🎯 Zona Interactiva</h1>
-    <p>¡Pon a prueba lo que sabes! Retos, quizzes y casos prácticos esperan por ti.</p>
-  </div>
+  <div class="section-hero" style="background:linear-gradient(135deg,#4c1d95,#7c3aed)"><h1>🎯 Zona Interactiva</h1><p>Quiz, retos de ahorro y caso práctico con Monedín. ¡Pon a prueba lo que sabes!</p></div>
   <div class="section-body">
-    <button class="back-btn" onclick="goTo('home')">← Regresar al inicio</button>
- 
+    <button class="back-btn" onclick="goTo('home')">← Inicio</button>
+
     <!-- QUIZ -->
     <span class="s-label">Actividad 1</span>
     <h2 class="s-title">🧠 Quiz Financiero</h2>
     <div class="s-divider"></div>
- 
     <div class="quiz-box" id="quizBox">
-      <h3>¿Cuánto sabes sobre finanzas? ¡Responde!</h3>
-      <div class="quiz-question" id="quizQ"></div>
-      <div class="quiz-options" id="quizOpts"></div>
-      <div class="quiz-feedback" id="quizFB"></div>
-      <button class="quiz-next" id="quizNext" onclick="nextQuestion()">Siguiente pregunta →</button>
+      <div class="quiz-header">
+        <h3>¿Cuánto sabes sobre finanzas?</h3>
+        <span class="quiz-progress" id="quizProg">Pregunta 1 de 5</span>
+      </div>
+      <div class="quiz-q" id="quizQ"></div>
+      <div class="quiz-opts" id="quizOpts"></div>
+      <div class="quiz-fb" id="quizFB"></div>
+      <div class="quiz-actions">
+        <button class="btn-green quiz-next" id="quizNext" onclick="nextQuestion()">Siguiente →</button>
+      </div>
     </div>
- 
-    <!-- RETOS DE AHORRO -->
-    <div style="margin-top:48px;">
+
+    <!-- RETOS -->
+    <div style="margin-top:44px">
       <span class="s-label">Actividad 2</span>
       <h2 class="s-title">🏆 Retos de Ahorro</h2>
       <div class="s-divider"></div>
- 
-      <div class="challenge-card" style="--c-color:#0f766e">
-        <span class="challenge-tag">Nivel Fácil</span>
-        <h3>Reto 7 días sin gasto hormiga</h3>
-        <p>Durante una semana, evita todos los gastos hormiga (refrescos, papitas, cafés). Anota cuánto dinero lograste salvar al final de los 7 días. ¿Cuánto fue?</p>
-      </div>
-      <div class="challenge-card" style="--c-color:#d97706">
-        <span class="challenge-tag" style="background:#fef3c7;color:#92400e">Nivel Medio</span>
-        <h3>Desafío del sobre</h3>
-        <p>Divide tu próxima mesada en tres sobres: 50% necesidades, 30% diversión, 20% ahorro. Intenta no romper las reglas durante toda la semana. ¡Comparte tu experiencia!</p>
-      </div>
-      <div class="challenge-card" style="--c-color:#7c3aed">
-        <span class="challenge-tag" style="background:#ede9fe;color:#5b21b6">Nivel Difícil</span>
-        <h3>Meta de ahorro de 30 días</h3>
-        <p>Elige una meta: unos audífonos, un juego, lo que quieras. Calcula cuánto debes ahorrar cada día para lograrlo en un mes. ¡Lleva un registro diario!</p>
+      <div class="challenge-list">
+        <!-- RETO 1 -->
+        <div class="challenge-card" style="--c-color:#0f766e">
+          <span class="ch-tag">Nivel Fácil · 7 días</span>
+          <h3>Reto: 7 días sin gasto hormiga</h3>
+          <p>Durante una semana evita todos los gastos hormiga. Marca cada día que lo logres y escribe tu compromiso.</p>
+          <textarea class="ch-input" id="ch1-text" placeholder="Escribe tu compromiso... Ej: Me comprometo a no comprar refresco esta semana y llevar agua de casa."></textarea>
+          <p style="font-size:.8rem;font-weight:700;color:var(--slate);margin-bottom:6px">Marca los días que cumpliste:</p>
+          <div class="ch-tracker" id="ch1-tracker"></div>
+          <button class="btn-green" style="font-size:.85rem;padding:9px 18px" onclick="saveChallenge(1)">💾 Guardar compromiso</button>
+          <div class="ch-saved" id="ch1-saved">✅ ¡Compromiso guardado! Monedín confía en ti 🪙</div>
+        </div>
+        <!-- RETO 2 -->
+        <div class="challenge-card" style="--c-color:#d97706">
+          <span class="ch-tag" style="background:var(--gold-lite);color:#92400e">Nivel Medio · 1 semana</span>
+          <h3>Desafío del sobre</h3>
+          <p>Divide tu próxima mesada: 50% necesidades, 30% diversión, 20% ahorro. ¿Lograste respetar los sobres?</p>
+          <textarea class="ch-input" id="ch2-text" placeholder="¿Cómo vas a dividir tu dinero esta semana? Escribe los montos de cada sobre..."></textarea>
+          <p style="font-size:.8rem;font-weight:700;color:var(--slate);margin-bottom:6px">Marca los días que mantuviste el plan:</p>
+          <div class="ch-tracker" id="ch2-tracker"></div>
+          <button class="btn-green" style="font-size:.85rem;padding:9px 18px" onclick="saveChallenge(2)">💾 Guardar compromiso</button>
+          <div class="ch-saved" id="ch2-saved">✅ ¡Excelente! Tu plan está guardado 📋</div>
+        </div>
+        <!-- RETO 3 -->
+        <div class="challenge-card" style="--c-color:#7c3aed">
+          <span class="ch-tag" style="background:#ede9fe;color:#5b21b6">Nivel Difícil · 30 días</span>
+          <h3>Meta de ahorro de 30 días</h3>
+          <p>Elige una meta específica y guarda dinero cada día. Lleva el conteo aquí.</p>
+          <textarea class="ch-input" id="ch3-text" placeholder="¿Qué quieres lograr? ¿Cuánto vas a ahorrar cada día? Escribe tu plan detallado..."></textarea>
+          <p style="font-size:.8rem;font-weight:700;color:var(--slate);margin-bottom:6px">Marca los días que ahorraste (de 30):</p>
+          <div class="ch-tracker" id="ch3-tracker"></div>
+          <button class="btn-green" style="font-size:.85rem;padding:9px 18px" onclick="saveChallenge(3)">💾 Guardar compromiso</button>
+          <div class="ch-saved" id="ch3-saved">✅ ¡30 días de reto activado! ¡Tú puedes! 🏆</div>
+        </div>
       </div>
     </div>
- 
+
     <!-- CASO PRÁCTICO -->
-    <div style="margin-top:48px;">
+    <div style="margin-top:44px">
       <span class="s-label">Actividad 3</span>
       <h2 class="s-title">📖 Caso Práctico</h2>
       <div class="s-divider"></div>
- 
-      <div class="comic-panel">
-        <div class="comic-header">📚 El caso de Sofía</div>
+      <div class="comic-panel" style="margin-bottom:18px"><div class="comic-header">📚 El caso de Sofía</div>
         <div class="comic-body">
-          <div style="font-size:2.5rem">👧</div>
-          <div class="comic-dialogue">
-            <p>Sofía recibe <span class="highlight-word">$400 a la semana</span> de mesada. Gasta $80 en transporte, $120 en comida, $60 en snacks y refrescos, $50 en datos del celular, y lo demás en videojuegos y ropa.</p>
-          </div>
+          <div style="font-size:2.8rem;flex-shrink:0">👧</div>
+          <div class="comic-dialogue"><p>Sofía recibe <span class="hw">$400 a la semana</span> de mesada. Sus gastos son: transporte $80, comida $120, snacks y refrescos $60, datos del celular $50, y el resto lo usa en videojuegos y ropa.</p></div>
         </div>
       </div>
- 
-      <div class="content-grid" style="margin-top:0">
-        <div class="content-card">
-          <span class="card-emoji">🤔</span>
-          <h3>Analiza</h3>
-          <p>¿Cuánto gasta Sofía en total? ¿Le queda algo para ahorrar? ¿Cuáles son sus gastos hormiga? ¿Qué le recomendarías?</p>
-        </div>
-        <div class="content-card">
-          <span class="card-emoji">💡</span>
-          <h3>Respuesta</h3>
-          <p>Gastos: $310. Le quedan $90, pero los gasta en entretenimiento. <b>Gasto hormiga:</b> $60 en snacks. Si los elimina, tendría $150 para ahorro = $600 al mes.</p>
+      <div class="case-box">
+        <h3>🤔 Ahora tú resuelves</h3>
+        <p style="color:var(--slate);font-size:.92rem;margin-bottom:18px">Analiza el caso de Sofía y responde las siguientes preguntas:</p>
+        <div class="case-input-row"><label>¿Cuánto gasta Sofía en total?</label><input type="number" id="c-total" placeholder="$"></div>
+        <div class="case-input-row"><label>¿Cuánto le queda para ahorrar?</label><input type="number" id="c-ahorro" placeholder="$"></div>
+        <div class="case-input-row"><label>¿Cuánto son sus gastos hormiga?</label><input type="number" id="c-hormiga" placeholder="$"></div>
+        <div class="case-input-row"><label>Si elimina hormiga, ¿cuánto ahorraría al mes?</label><input type="number" id="c-mesahorro" placeholder="$"></div>
+        <button class="btn-green" style="margin-top:10px" onclick="checkCase()">🤖 Que Monedín revise mis respuestas</button>
+        <div class="ai-response" id="aiResponse">
+          <div class="ai-header">
+            <svg width="36" height="36" viewBox="0 0 60 60"><circle cx="30" cy="30" r="28" fill="#f59e0b"/><circle cx="30" cy="30" r="22" fill="#fbbf24"/><text x="30" y="38" text-anchor="middle" font-size="22" font-weight="bold" fill="#78350f">$</text></svg>
+            <span>Monedín analiza tus respuestas</span>
+          </div>
+          <div class="ai-text" id="aiText"></div>
         </div>
       </div>
     </div>
- 
   </div>
-  <footer><p>Control y Ahorro · <span>CBTIS 76</span> · Con Monedín 🪙</p></footer>
+  <footer><p>Control y Ahorro · <span>CBTIS 76</span></p></footer>
 </div>
- 
-<!-- ════════════════════════════════════════════
-     SCREEN: ESCAPE ROOM ENTRY
-════════════════════════════════════════════ -->
+
+<!-- ══════════════════ MURO COMUNITARIO ══════════════════ -->
+<div id="screen-muro" class="screen">
+  <div class="section-hero" style="background:linear-gradient(135deg,#1e3a5f,#1d4ed8)"><h1>🌍 Muro Comunitario</h1><p>Comparte tu compromiso de ahorro y lee el de tus compañeros.</p></div>
+  <div class="section-body">
+    <button class="back-btn" onclick="goTo('home')">← Inicio</button>
+
+    <!-- LOGIN WALL -->
+    <div id="wallLoginBox" class="wall-login-box" style="display:none">
+      <div style="font-size:3.5rem;margin-bottom:12px">🌍</div>
+      <h3>Inicia sesión para participar</h3>
+      <p>Usa tu cuenta de Google para publicar tu compromiso de ahorro y ver el de tus compañeros del CBTIS 76.</p>
+      <button class="google-btn" onclick="signInGoogle()">
+        <img src="https://www.google.com/favicon.ico" alt="Google">
+        Entrar con Google
+      </button>
+    </div>
+
+    <!-- WALL CONTENT -->
+    <div id="wallContent" style="display:none">
+      <div class="wall-form">
+        <h3>📝 Publica tu compromiso</h3>
+        <select id="wall-reto">
+          <option value="">Selecciona un reto...</option>
+          <option value="7 días sin gasto hormiga">🐜 7 días sin gasto hormiga</option>
+          <option value="Desafío del sobre">✉️ Desafío del sobre</option>
+          <option value="Meta de 30 días">🎯 Meta de 30 días</option>
+          <option value="Otro compromiso">💡 Otro compromiso</option>
+        </select>
+        <textarea id="wall-texto" placeholder="Escribe tu compromiso de ahorro para que todos lo vean... ¡La comunidad te apoyará!" rows="3"></textarea>
+        <button class="btn-green" onclick="publishPost()">🚀 Publicar en el muro</button>
+      </div>
+      <h3 style="font-family:'Fredoka One',cursive;color:var(--green-dark);margin-bottom:14px" id="wallCount">Cargando...</h3>
+      <div class="wall-posts" id="wallPosts"></div>
+    </div>
+  </div>
+  <footer><p>Control y Ahorro · <span>CBTIS 76</span></p></footer>
+</div>
+
+<!-- ══════════════════ GLOSARIO ══════════════════ -->
+<div id="screen-glosario" class="screen">
+  <div class="section-hero" style="background:linear-gradient(135deg,#1e3a5f,#0369a1)"><h1>📒 Glosario Financiero</h1><p>Monedín te explica los términos más importantes del mundo del dinero.</p></div>
+  <div class="section-body">
+    <button class="back-btn" onclick="goTo('home')">← Inicio</button>
+    <input class="glossary-search" id="glossSearch" placeholder="🔍 Buscar un término..." oninput="filterGlossary(this.value)">
+    <div class="glossary-grid" id="glossaryGrid"></div>
+  </div>
+  <footer><p>Control y Ahorro · <span>CBTIS 76</span></p></footer>
+</div>
+
+<!-- ══════════════════ RECURSOS ══════════════════ -->
+<div id="screen-recursos" class="screen">
+  <div class="section-hero" style="background:linear-gradient(135deg,#7f1d1d,#dc2626)"><h1>📚 Recursos</h1><p>Videos, links y tips para seguir aprendiendo sobre finanzas.</p></div>
+  <div class="section-body">
+    <button class="back-btn" onclick="goTo('home')">← Inicio</button>
+
+    <!-- TIP ROTATOR -->
+    <div class="tip-rotator">
+      <h3>💬 Monedín dice...</h3>
+      <div class="tip-text" id="tipText">Cargando consejo...</div>
+    </div>
+
+    <span class="s-label">Canales recomendados</span>
+    <h2 class="s-title">🎥 Aprende con YouTube</h2>
+    <div class="s-divider"></div>
+    <div class="resource-card">
+      <div class="resource-icon" style="background:#fee2e2">▶️</div>
+      <div><h3>Eduardo Rosas – Finanzas Personales</h3><p>Canal mexicano especializado en educación financiera para principiantes. Videos sobre presupuesto, ahorro y la regla 50-30-20.</p><a class="resource-link" href="https://www.youtube.com/@EduardoRosas" target="_blank">Ir al canal →</a></div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon" style="background:#fef3c7">▶️</div>
+      <div><h3>Daniel Urías – Finanzas en lenguaje común</h3><p>Explica finanzas personales con un lenguaje coloquial y divertido, ideal para jóvenes. Desmitifica conceptos financieros.</p><a class="resource-link" href="https://www.youtube.com/@DanielUrias" target="_blank">Ir al canal →</a></div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon" style="background:#dcfce7">▶️</div>
+      <div><h3>Pequeño Cerdo Capitalista – Sofía Macías</h3><p>La referente más importante de educación financiera en México. Explica ahorro, inversión y presupuesto de forma muy accesible.</p><a class="resource-link" href="https://www.youtube.com/@PequenoCerdoCapitalista" target="_blank">Ir al canal →</a></div>
+    </div>
+
+    <span class="s-label" style="margin-top:36px;display:block">Sitios oficiales</span>
+    <h2 class="s-title">🔗 Links importantes</h2>
+    <div class="s-divider"></div>
+    <div class="resource-card">
+      <div class="resource-icon" style="background:#dbeafe">🏛️</div>
+      <div><h3>CONDUSEF – Educación Financiera</h3><p>La Comisión Nacional para la Protección de Usuarios Financieros ofrece videocápsulas, calculadoras y recursos gratuitos.</p><a class="resource-link" href="https://www.condusef.gob.mx" target="_blank">Visitar →</a></div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon" style="background:#f3e8ff">📊</div>
+      <div><h3>BBVA México – Calculadora 50-30-20</h3><p>Calculadora interactiva oficial para aplicar la regla 50-30-20 a tus ingresos y ver cómo distribuir tu dinero.</p><a class="resource-link" href="https://www.bbva.mx/educacion-financiera/ahorro/ahorro/regla-50-30-20-de-ahorro.html" target="_blank">Ver la regla →</a></div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon" style="background:#fef9c3">🌍</div>
+      <div><h3>OCDE – Competencias Financieras Jóvenes</h3><p>Informe de la OCDE sobre educación financiera de jóvenes en México y el mundo, con datos y recomendaciones.</p><a class="resource-link" href="https://www.oecd.org/financial/education/" target="_blank">Ver informe →</a></div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon" style="background:#ecfeff">🏦</div>
+      <div><h3>Banxico – Inclusión Financiera</h3><p>El Banco de México ofrece materiales didácticos sobre el sistema financiero mexicano y la importancia del ahorro.</p><a class="resource-link" href="https://www.banxico.org.mx" target="_blank">Visitar →</a></div>
+    </div>
+    <div class="resource-card">
+      <div class="resource-icon" style="background:#fff7ed">🎓</div>
+      <div><h3>UNAM – Curso Finanzas Personales (gratis)</h3><p>Curso gratuito de la UNAM en Coursera sobre presupuesto, ahorro e inversión. Disponible en línea las 24 horas.</p><a class="resource-link" href="https://www.coursera.org/learn/finanzas-personales" target="_blank">Ver curso →</a></div>
+    </div>
+  </div>
+  <footer><p>Control y Ahorro · <span>CBTIS 76</span></p></footer>
+</div>
+
+<!-- ══════════════════ ESCAPE ROOM ENTRY ══════════════════ -->
 <div id="screen-escape" class="screen">
   <div class="escape-hero">
     <div class="stars-bg" id="starsBg"></div>
     <span class="escape-badge">🔐 Escape Room Financiero</span>
     <h1>Misión:<br><span class="gold">Saldo a Favor</span></h1>
     <p>Toma decisiones financieras inteligentes, supera los retos y escapa con tu dinero a salvo. ¡Cada elección cambia tu destino!</p>
-    <button class="escape-start-btn" onclick="goTo('escape-room')">
-      🚀 ¡Comenzar la Misión!
-    </button>
-    <div class="escape-info-grid">
-      <div class="escape-info-item">
-        <div class="eii-val">5</div>
-        <div class="eii-label">Escenas</div>
-      </div>
-      <div class="escape-info-item">
-        <div class="eii-val">3</div>
-        <div class="eii-label">Finales posibles</div>
-      </div>
-      <div class="escape-info-item">
-        <div class="eii-val">~15 min</div>
-        <div class="eii-label">Duración</div>
-      </div>
-      <div class="escape-info-item">
-        <div class="eii-val">🏆</div>
-        <div class="eii-label">¡Hay trofeo!</div>
-      </div>
+    <button class="escape-start" onclick="alert('🚀 ¡El Escape Room estará disponible muy pronto! Por ahora practica con el Quiz y los Retos.')">🚀 ¡Comenzar Misión! (Próximamente)</button>
+    <div class="escape-stats">
+      <div class="escape-stat"><div class="es-val">5</div><div class="es-lbl">Escenas</div></div>
+      <div class="escape-stat"><div class="es-val">3</div><div class="es-lbl">Finales</div></div>
+      <div class="escape-stat"><div class="es-val">~15 min</div><div class="es-lbl">Duración</div></div>
+      <div class="escape-stat"><div class="es-val">🏆</div><div class="es-lbl">Trofeo</div></div>
     </div>
   </div>
 </div>
- 
-<!-- ════════════════════════════════════════════
-     SCREEN: RECURSOS
-════════════════════════════════════════════ -->
-<div id="screen-recursos" class="screen">
-  <div class="section-hero" style="background:linear-gradient(135deg,#991b1b,#dc2626)">
-    <h1>📚 Recursos</h1>
-    <p>Materiales de apoyo, consejos y herramientas para seguir aprendiendo sobre finanzas.</p>
-  </div>
-  <div class="section-body">
-    <button class="back-btn" onclick="goTo('home')">← Regresar al inicio</button>
- 
-    <span class="s-label">Consejos rápidos</span>
-    <h2 class="s-title">💡 Tips de Monedín</h2>
-    <div class="s-divider"></div>
- 
-    <div class="comic-panel" style="margin-bottom:32px;">
-      <div class="comic-header">🪙 Monedín comparte sus mejores consejos</div>
-      <div class="comic-body">
-        <svg class="comic-mascot" viewBox="0 0 100 100"><circle cx="50" cy="55" r="38" fill="#f59e0b"/><circle cx="50" cy="55" r="30" fill="#fbbf24"/><circle cx="38" cy="48" r="7" fill="white"/><circle cx="62" cy="48" r="7" fill="white"/><circle cx="40" cy="50" r="3.5" fill="#1e293b"/><circle cx="64" cy="50" r="3.5" fill="#1e293b"/><path d="M38 66 Q50 76 62 66" stroke="#78350f" stroke-width="2.5" stroke-linecap="round" fill="none"/><rect x="34" y="16" width="32" height="7" rx="2" fill="#1e293b"/><polygon points="50,6 66,16 50,19 34,16" fill="#1e293b"/></svg>
-        <div class="comic-dialogue">
-          <p>¡Recuerda! <span class="highlight-word">El mejor momento para empezar a ahorrar fue ayer. El segundo mejor momento es HOY.</span> No esperes a tener mucho dinero, empieza con lo que tienes. 🌱</p>
-        </div>
-      </div>
-    </div>
- 
-    <div class="resource-card">
-      <div class="resource-icon" style="background:#dcfce7;">💳</div>
-      <div>
-        <h3>CONDUSEF – Educación Financiera</h3>
-        <p>La Comisión Nacional para la Protección y Defensa de los Usuarios de Servicios Financieros ofrece recursos gratuitos sobre ahorro, crédito y planeación financiera.</p>
-        <a class="resource-link" href="https://www.condusef.gob.mx" target="_blank">Visitar sitio →</a>
-      </div>
-    </div>
-    <div class="resource-card">
-      <div class="resource-icon" style="background:#dbeafe;">🏛️</div>
-      <div>
-        <h3>Banco de México – Educación Financiera</h3>
-        <p>El Banco de México tiene materiales didácticos sobre el sistema financiero, el ahorro y la importancia del dinero.</p>
-        <a class="resource-link" href="https://www.banxico.org.mx" target="_blank">Visitar sitio →</a>
-      </div>
-    </div>
-    <div class="resource-card">
-      <div class="resource-icon" style="background:#fef3c7;">📊</div>
-      <div>
-        <h3>Regla 50-30-20</h3>
-        <p>Una de las fórmulas más usadas en el mundo para distribuir el dinero: 50% necesidades, 30% deseos, 20% ahorro. ¡Simple y efectiva!</p>
-      </div>
-    </div>
-    <div class="resource-card">
-      <div class="resource-icon" style="background:#ede9fe;">🎓</div>
-      <div>
-        <h3>OCDE – Competencias Financieras Jóvenes</h3>
-        <p>La Organización para la Cooperación y el Desarrollo Económicos publicó un informe sobre la educación financiera de jóvenes en México y el mundo.</p>
-      </div>
-    </div>
- 
-    <div class="highlight-box" style="margin-top:36px;">
-      <h3>📌 Los 5 hábitos de un joven con finanzas sanas</h3>
-      <ul style="padding-left:18px;margin-top:10px;color:var(--slate)">
-        <li style="margin-bottom:8px;">Anota <b>todos</b> tus gastos, por pequeños que sean</li>
-        <li style="margin-bottom:8px;">Separa tu ahorro <b>antes</b> de gastar, no después</li>
-        <li style="margin-bottom:8px;">Pregúntate "¿lo necesito o lo quiero?" antes de comprar</li>
-        <li style="margin-bottom:8px;">Establece <b>metas claras</b> para tu ahorro</li>
-        <li>Evita las deudas que no puedes pagar en el mes</li>
-      </ul>
-    </div>
-  </div>
-  <footer><p>Control y Ahorro · <span>CBTIS 76</span> · Con Monedín 🪙</p></footer>
-</div>
- 
+
 </div><!-- end .page -->
- 
+
+<!-- ══════════════════════════════════════
+     FIREBASE + JS
+══════════════════════════════════════ -->
 <script>
-// ═══════════════════════════════════════
-// SCREEN NAVIGATION
-// ═══════════════════════════════════════
-function goTo(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
- 
-  const screen = document.getElementById('screen-' + id);
-  if (screen) {
-    screen.classList.add('active');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+// ─── FIREBASE CONFIG ───────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyA7nnJY9Eq08mDbjDmegGBki8zSKI5RkTE",
+  authDomain: "control-y-ahorro.firebaseapp.com",
+  projectId: "control-y-ahorro",
+  storageBucket: "control-y-ahorro.firebasestorage.app",
+  messagingSenderId: "1074694673223",
+  appId: "1:1074694673223:web:0058bebdf739f1d46c7262"
+};
+firebase.initializeApp(firebaseConfig);
+const db   = firebase.firestore();
+const auth = firebase.auth();
+
+// ─── CURRENT USER ───────────────────
+let currentUser = null;
+auth.onAuthStateChanged(user => {
+  currentUser = user;
+  const avatar   = document.getElementById('userAvatar');
+  const loginBtn = document.getElementById('loginBtn');
+  if (user) {
+    avatar.src   = user.photoURL || '';
+    avatar.style.display = 'block';
+    loginBtn.style.display = 'none';
+  } else {
+    avatar.style.display = 'none';
+    loginBtn.style.display = 'block';
   }
- 
+  // refresh muro if on it
+  if (document.getElementById('screen-muro').classList.contains('active')) {
+    renderMuroAuth();
+  }
+});
+
+function signInGoogle() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).catch(e => console.error(e));
+}
+function signOut() {
+  if (confirm('¿Cerrar sesión?')) auth.signOut();
+}
+
+// ─── NAVIGATION + HISTORY API ──────────
+const SCREENS = ['home','aprende','organiza','interactiva','muro','glosario','recursos','escape'];
+
+function goTo(id) {
+  SCREENS.forEach(s => {
+    const el = document.getElementById('screen-' + s);
+    if (el) el.classList.remove('active');
+    const btn = document.getElementById('nav-' + s);
+    if (btn) btn.classList.remove('active');
+  });
+
+  const screen = document.getElementById('screen-' + id);
+  if (screen) screen.classList.add('active');
+
   const navBtn = document.getElementById('nav-' + id);
   if (navBtn) navBtn.classList.add('active');
- 
-  // special: escape-room goes to escape screen
-  if (id === 'escape-room') {
-    document.getElementById('screen-escape').classList.remove('active');
-    loadEscapeRoom();
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // push history state for back button support (iOS & Android)
+  if (history.state?.screen !== id) {
+    history.pushState({ screen: id }, '', '#' + id);
+  }
+
+  // lazy-load section data
+  if (id === 'muro')     renderMuroAuth();
+  if (id === 'glosario') renderGlossary();
+  if (id === 'recursos') startTipRotator();
+}
+
+// Handle browser back/forward
+window.addEventListener('popstate', e => {
+  const id = e.state?.screen || 'home';
+  goTo(id);
+});
+
+// Handle hash on load
+window.addEventListener('load', () => {
+  const hash = location.hash.replace('#', '');
+  if (hash && SCREENS.includes(hash)) goTo(hash);
+  else {
+    history.replaceState({ screen: 'home' }, '', '#home');
+  }
+  initCoins();
+  initStars();
+  initChallengeTrackers();
+  renderQuiz();
+  rotateBubble();
+});
+
+// ─── DARK MODE ──────────────────────────
+let dark = localStorage.getItem('darkMode') === 'true';
+applyTheme();
+function toggleDark() {
+  dark = !dark;
+  localStorage.setItem('darkMode', dark);
+  applyTheme();
+}
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  document.getElementById('darkToggle').textContent = dark ? '☀️' : '🌙';
+}
+
+// ─── HAMBURGER ───────────────────────────
+function toggleMenu() {
+  document.getElementById('mobileMenu').classList.toggle('open');
+}
+
+// ─── FLOATING COINS ──────────────────────
+function initCoins() {
+  const bg = document.getElementById('coinsBg');
+  const emojis = ['🪙','💰','💵','💴','💶','🏦'];
+  for (let i = 0; i < 16; i++) {
+    const c = document.createElement('div');
+    c.className = 'coin-float';
+    c.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    c.style.left = Math.random() * 100 + '%';
+    c.style.animationDuration = (8 + Math.random() * 12) + 's';
+    c.style.animationDelay    = (Math.random() * 10) + 's';
+    c.style.fontSize = (1.1 + Math.random() * 1.4) + 'rem';
+    bg.appendChild(c);
   }
 }
- 
-// ═══════════════════════════════════════
-// FLOATING COINS (HOME)
-// ═══════════════════════════════════════
-const coinsBg = document.getElementById('coinsBg');
-const coinEmojis = ['🪙','💰','💵','💴','💶','💷','🏦'];
-for (let i = 0; i < 18; i++) {
-  const c = document.createElement('div');
-  c.className = 'coin-float';
-  c.textContent = coinEmojis[Math.floor(Math.random() * coinEmojis.length)];
-  c.style.left = Math.random() * 100 + '%';
-  c.style.animationDuration = (8 + Math.random() * 14) + 's';
-  c.style.animationDelay = (Math.random() * 12) + 's';
-  c.style.fontSize = (1.2 + Math.random() * 1.6) + 'rem';
-  coinsBg.appendChild(c);
+
+// ─── STARS ───────────────────────────────
+function initStars() {
+  const bg = document.getElementById('starsBg');
+  for (let i = 0; i < 55; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = 1 + Math.random() * 3;
+    s.style.cssText = `width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s`;
+    bg.appendChild(s);
+  }
 }
- 
-// ═══════════════════════════════════════
-// STARS (ESCAPE ENTRY)
-// ═══════════════════════════════════════
-const starsBg = document.getElementById('starsBg');
-for (let i = 0; i < 60; i++) {
-  const s = document.createElement('div');
-  s.className = 'star';
-  const size = 1 + Math.random() * 3;
-  s.style.cssText = `width:${size}px;height:${size}px;top:${Math.random()*100}%;left:${Math.random()*100}%;animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s`;
-  starsBg.appendChild(s);
+
+// ─── ROTATING BUBBLE ─────────────────────
+const bubbleMessages = [
+  '¡Hola! Soy <b>Monedín</b> 👋<br>¡Cuida tu dinero!',
+  '💡 ¿Sabías que ahorrar<br>$10 al día = $3,600 al año?',
+  '🐜 ¡Cuidado con el<br>gasto hormiga!',
+  '🎯 Define una <b>meta</b><br>y empieza a ahorrar hoy',
+  '📊 Usa la regla<br><b>50 · 30 · 20</b>',
+  '🏦 ¡Págarte a ti<br>primero siempre!',
+  '💪 ¡Tú puedes lograr<br>tus metas financieras!',
+];
+let bubbleIdx = 0;
+function rotateBubble() {
+  const el = document.getElementById('heroBubble');
+  if (!el) return;
+  el.innerHTML = bubbleMessages[bubbleIdx % bubbleMessages.length];
+  bubbleIdx++;
+  setTimeout(rotateBubble, 4000);
 }
- 
-// ═══════════════════════════════════════
-// TOPIC TABS (APRENDE)
-// ═══════════════════════════════════════
+
+// ─── TOPIC TABS ──────────────────────────
 function showTopic(id, btn) {
   document.querySelectorAll('.topic-content').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('topic-' + id).classList.add('active');
   btn.classList.add('active');
 }
- 
-// ═══════════════════════════════════════
-// BUDGET CALCULATOR
-// ═══════════════════════════════════════
+
+// ─── TOOL TABS ───────────────────────────
+function showTool(id, btn) {
+  document.querySelectorAll('.tool-panel').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tool-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('tool-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ─── BUDGET CALCULATOR ───────────────────
 function calcBudget() {
-  const ingreso = parseFloat(document.getElementById('b-ingreso').value) || 0;
-  const gastos = ['b-comida','b-transporte','b-escolar','b-entrete','b-hormiga','b-otros']
-    .reduce((sum, id) => sum + (parseFloat(document.getElementById(id).value) || 0), 0);
- 
-  const saldo = ingreso - gastos;
-  const pct = ingreso > 0 ? Math.min((gastos / ingreso) * 100, 100) : 0;
- 
-  document.getElementById('res-ingreso').textContent = '$' + ingreso.toFixed(0);
-  document.getElementById('res-gastos').textContent = '$' + gastos.toFixed(0);
-  document.getElementById('res-ahorro').textContent = (saldo >= 0 ? '+' : '') + '$' + saldo.toFixed(0);
-  document.getElementById('res-ahorro').style.color = saldo >= 0 ? '#4ade80' : '#f87171';
+  const ing = parseFloat(document.getElementById('b-ingreso').value) || 0;
+  const ids  = ['b-comida','b-transporte','b-escolar','b-entrete','b-hormiga-g','b-otros'];
+  const gas  = ids.reduce((s, id) => s + (parseFloat(document.getElementById(id).value) || 0), 0);
+  const sal  = ing - gas;
+  const pct  = ing > 0 ? Math.min((gas / ing) * 100, 100) : 0;
+
+  document.getElementById('res-ing').textContent = '$' + ing.toFixed(0);
+  document.getElementById('res-gas').textContent = '$' + gas.toFixed(0);
+  document.getElementById('res-sal').textContent = (sal >= 0 ? '+$' : '-$') + Math.abs(sal).toFixed(0);
+  document.getElementById('res-sal').style.color = sal >= 0 ? '#4ade80' : '#f87171';
   document.getElementById('budgetResult').style.display = 'flex';
   setTimeout(() => {
-    document.getElementById('res-bar').style.width = pct + '%';
-    document.getElementById('res-bar').style.background = pct > 80 ? '#ef4444' : pct > 60 ? '#f59e0b' : '#4ade80';
+    const bar = document.getElementById('res-bar');
+    bar.style.width = pct + '%';
+    bar.style.background = pct > 85 ? '#ef4444' : pct > 65 ? '#f59e0b' : '#4ade80';
   }, 100);
- 
-  const fb = document.getElementById('budget-feedback');
-  fb.style.display = 'block';
-  if (saldo < 0) {
-    fb.innerHTML = `<div class="gold-box"><h3>⚠️ ¡Alerta! Estás gastando más de lo que tienes</h3><p>Tus gastos superan tus ingresos por <b>$${Math.abs(saldo).toFixed(0)}</b>. Revisa en qué puedes reducir, especialmente el gasto hormiga.</p></div>`;
-  } else if (saldo < ingreso * 0.2) {
-    fb.innerHTML = `<div class="highlight-box"><h3>🟡 Puedes mejorar tu ahorro</h3><p>Te sobran <b>$${saldo.toFixed(0)}</b>, pero lo ideal es ahorrar al menos el 20% de tus ingresos (<b>$${(ingreso*0.2).toFixed(0)}</b>). ¡Reduce un poco los gastos opcionales!</p></div>`;
+
+  const fb = document.getElementById('budget-fb');
+  if (sal < 0) {
+    fb.innerHTML = `<div class="gold-box" style="border-color:#ef4444"><h3>⚠️ ¡Estás gastando más de lo que tienes!</h3><p>Tus gastos superan tus ingresos por <b>$${Math.abs(sal).toFixed(0)}</b>. Monedín te sugiere revisar los gastos opcionales y el gasto hormiga. ¡Pequeños cambios hacen una gran diferencia!</p></div>`;
+  } else if (sal < ing * 0.2) {
+    fb.innerHTML = `<div class="highlight"><h3>🟡 Puedes mejorar tu ahorro</h3><p>Te sobran <b>$${sal.toFixed(0)}</b>, pero lo ideal es ahorrar al menos el 20% (<b>$${(ing*0.2).toFixed(0)}</b>). Intenta reducir gastos de entretenimiento o gasto hormiga. ¡Estás cerca!</p></div>`;
   } else {
-    fb.innerHTML = `<div class="highlight-box" style="border-color:#16a34a;background:linear-gradient(135deg,#dcfce7,#f0fdf4)"><h3 style="color:#14532d">🎉 ¡Excelente! Tu presupuesto está bien organizado</h3><p style="color:#166534">Estás ahorrando <b>$${saldo.toFixed(0)}</b>, que representa el ${(saldo/ingreso*100).toFixed(0)}% de tus ingresos. ¡Monedín está orgulloso de ti! 🏆</p></div>`;
+    fb.innerHTML = `<div class="highlight" style="border-color:#16a34a;background:#dcfce7"><h3 style="color:#14532d">🎉 ¡Excelente! Tu presupuesto está bien organizado</h3><p style="color:#166534">Estás ahorrando <b>$${sal.toFixed(0)}</b> (${(sal/ing*100).toFixed(0)}% de tus ingresos). ¡Monedín está muy orgulloso de ti! 🏆 Sigue así.</p></div>`;
   }
 }
- 
-// ═══════════════════════════════════════
-// QUIZ
-// ═══════════════════════════════════════
-const quizData = [
-  {
-    q: "¿Cuál de los siguientes es un ejemplo de 'gasto hormiga'?",
-    opts: ["Pagar la colegiatura", "Comprar un refresco diario en la tienda", "Pagar el transporte escolar", "Comprar útiles escolares"],
-    correct: 1,
-    feedback: "¡Correcto! Los refrescos diarios son un gasto hormiga clásico. $20 diarios = $600 al mes que podrías ahorrar. 🐜"
-  },
-  {
-    q: "Según la regla 50-30-20, ¿qué porcentaje debería ir al ahorro?",
-    opts: ["50%", "30%", "20%", "10%"],
-    correct: 2,
-    feedback: "¡Exacto! El 20% va al ahorro, el 50% a necesidades y el 30% a deseos. 💰"
-  },
-  {
-    q: "Tienes $500 de mesada. Siguiendo la regla 50-30-20, ¿cuánto deberías ahorrar?",
-    opts: ["$50", "$100", "$150", "$250"],
-    correct: 1,
-    feedback: "¡Bien! El 20% de $500 = $100 para ahorro. ¡Cada semana suma! 🏦"
-  },
-  {
-    q: "¿Qué significa 'hacer un presupuesto'?",
-    opts: ["Gastar todo el dinero lo más rápido posible", "Planear con anticipación cómo vas a usar tu dinero", "Pedirle dinero prestado a alguien", "Ahorrar el 100% de tus ingresos"],
-    correct: 1,
-    feedback: "¡Perfecto! Un presupuesto es un PLAN para tu dinero, no una restricción. 📋"
-  },
-  {
-    q: "¿Cuál es la mejor estrategia para alcanzar una meta de ahorro?",
-    opts: ["Ahorrar lo que sobre al final del mes", "Esperar a ganar más dinero para empezar a ahorrar", "Separar el ahorro al inicio, antes de gastar en cualquier otra cosa", "Guardar el dinero solo en días especiales"],
-    correct: 2,
-    feedback: "¡Exactamente! 'Págarte a ti primero' es el secreto de los buenos ahorradores. 🌟"
+
+// ─── HORMIGA CALCULATOR ──────────────────
+function calcHormiga() {
+  const ids = ['h-cafe','h-snack','h-apps','h-taxi','h-otros'];
+  const dia = ids.reduce((s, id) => s + (parseFloat(document.getElementById(id).value) || 0), 0);
+  const mes  = dia * 30;
+  const anio = dia * 365;
+  document.getElementById('h-dia').textContent  = '$' + dia.toFixed(0);
+  document.getElementById('h-mes').textContent  = '$' + mes.toFixed(0);
+  document.getElementById('h-anio').textContent = '$' + anio.toFixed(0);
+  document.getElementById('hormigaResult').style.display = 'flex';
+
+  const fb = document.getElementById('hormiga-fb');
+  if (dia > 0) {
+    const equiv = anio > 5000 ? 'un viaje de fin de semana 🏖️' : anio > 2000 ? 'unos buenos audífonos y más 🎧' : 'varios gustos importantes 🎁';
+    fb.innerHTML = `<div class="gold-box" style="margin-top:14px"><h3>😮 ¡Eso equivale a ${equiv}!</h3><p>Con <b>$${dia.toFixed(0)} al día</b> en gastos hormiga, en un año pierdes <b>$${anio.toFixed(0)}</b>. Si los ahorraras, podrías lograr metas importantes. ¿Vale la pena?</p></div>`;
   }
+}
+
+// ─── META CALCULATOR ─────────────────────
+function calcMeta() {
+  const nombre = document.getElementById('m-nombre').value || 'tu meta';
+  const costo  = parseFloat(document.getElementById('m-costo').value) || 0;
+  const dias   = parseInt(document.getElementById('m-dias').value) || 1;
+  const tengo  = parseFloat(document.getElementById('m-tengo').value) || 0;
+  const falta  = Math.max(costo - tengo, 0);
+  const porDia = falta / dias;
+  const porSem = porDia * 7;
+  const pct    = costo > 0 ? Math.min((tengo / costo) * 100, 100) : 0;
+
+  document.getElementById('m-dia').textContent   = '$' + porDia.toFixed(2);
+  document.getElementById('m-sem').textContent   = '$' + porSem.toFixed(2);
+  document.getElementById('m-falta').textContent = '$' + falta.toFixed(0);
+  document.getElementById('metaResult').style.display = 'flex';
+  document.getElementById('meta-progress').style.display = 'block';
+  setTimeout(() => {
+    document.getElementById('m-bar').style.width = pct + '%';
+  }, 100);
+  document.getElementById('m-msg').textContent = pct > 0
+    ? `¡Ya tienes el ${pct.toFixed(0)}% de tu meta "${nombre}"! 💪`
+    : `¡Empieza hoy y en ${dias} días tendrás "${nombre}"!`;
+}
+
+// ─── QUIZ SYSTEM ─────────────────────────
+const QUIZ_BANK = [
+  { q:"¿Cuál es un ejemplo de 'gasto hormiga'?", opts:["Pagar la colegiatura","Comprar un refresco diario","Pagar el transporte escolar","Comprar útiles"], c:1, fb:"✅ ¡Correcto! $20 diarios = $600 al mes que podrías ahorrar. 🐜" },
+  { q:"Según la regla 50-30-20, ¿qué % va al ahorro?", opts:["50%","30%","20%","10%"], c:2, fb:"✅ ¡Exacto! El 20% siempre va al ahorro. 💰" },
+  { q:"Tienes $500 de mesada. Aplicando 50-30-20, ¿cuánto ahorras?", opts:["$50","$100","$150","$250"], c:1, fb:"✅ ¡Bien! 20% de $500 = $100 para ahorro. 🏦" },
+  { q:"¿Qué significa hacer un presupuesto?", opts:["Gastar rápido","Planear cómo usar tu dinero antes de gastarlo","Pedir dinero prestado","Ahorrar el 100%"], c:1, fb:"✅ ¡Perfecto! Un presupuesto es un PLAN para tu dinero. 📋" },
+  { q:"¿Cuál es la mejor estrategia de ahorro?", opts:["Ahorrar lo que sobre","Esperar a ganar más","Separar el ahorro antes de gastar","Guardar solo en días especiales"], c:2, fb:"✅ ¡Exactamente! 'Págarte a ti primero' es el secreto. 🌟" },
+  { q:"Si gastas $20 en refresco cada día, ¿cuánto es al mes?", opts:["$200","$400","$600","$800"], c:2, fb:"✅ $20 × 30 días = $600. ¡Eso es mucho dinero! 🐜" },
+  { q:"¿Cuál NO es un gasto necesario?", opts:["Transporte escolar","Comida","Videojuegos","Material escolar"], c:2, fb:"✅ Los videojuegos son un deseo, no una necesidad. 🎮" },
+  { q:"¿Qué es el 'interés compuesto'?", opts:["Pagar deudas","Ganar interés sobre tu ahorro Y sobre los intereses previos","Un tipo de gasto hormiga","Una regla de presupuesto"], c:1, fb:"✅ ¡Correcto! El interés compuesto hace crecer tu dinero con el tiempo. 📈" },
+  { q:"¿Cuándo debes separar tu ahorro?", opts:["Al final del mes si sobra","Al inicio, antes de gastar","Cuando quieras comprar algo","Solo en diciembre"], c:1, fb:"✅ ¡Sí! Separa el ahorro primero. 'Págarte a ti mismo' es clave. 🏦" },
+  { q:"¿Qué es un fondo de emergencia?", opts:["Dinero para diversión","Dinero ahorrado para gastos inesperados","Un tipo de deuda","Un plan de inversión"], c:1, fb:"✅ ¡Correcto! Un fondo de emergencia te protege de gastos inesperados. 🛡️" },
+  { q:"¿Cuál es la fórmula del presupuesto sano?", opts:["Ingresos = Gastos","Gastos > Ingresos","Ingresos > Gastos","Deudas = Ahorro"], c:2, fb:"✅ ¡Tus ingresos siempre deben ser mayores que tus gastos! ⚖️" },
+  { q:"¿Qué significa 'liquidez'?", opts:["Tener muchas deudas","Qué tan fácil es convertir algo en dinero en efectivo","Un tipo de ahorro","Gastar mucho"], c:1, fb:"✅ ¡Correcto! El efectivo es el activo más líquido que existe. 💧" },
+  { q:"¿Cuál es el primer paso para ahorrar?", opts:["Buscar más ingresos","Pedir un préstamo","Conocer cuánto ganas y en qué gastas","Invertir en bolsa"], c:2, fb:"✅ ¡Exacto! Sin saber cuánto ganas y gastas, es imposible ahorrar. 📊" },
+  { q:"Una deuda con tarjeta de crédito sin pagar genera...", opts:["Menos interés","Más interés cada mes","Ningún problema","Un descuento"], c:1, fb:"✅ Las deudas de tarjeta generan intereses que se acumulan. ¡Cuidado! 💳" },
+  { q:"¿Qué es mejor para tus finanzas?", opts:["Comprar a crédito todo","Gastar todo antes de fin de mes","Ahorrar aunque sea poco cada semana","No pensar en el dinero"], c:2, fb:"✅ ¡Constancia! Poco a poco se va llenando el pilón. 🪙" },
 ];
- 
+
+let quizQuestions = [];
 let currentQ = 0;
-let answered = false;
- 
+let answered  = false;
+let score     = 0;
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 function renderQuiz() {
-  const data = quizData[currentQ];
-  document.getElementById('quizQ').textContent = `Pregunta ${currentQ + 1} de ${quizData.length}: ${data.q}`;
+  quizQuestions = shuffleArray(QUIZ_BANK).slice(0, 5);
+  currentQ = 0; score = 0; answered = false;
+  showQuestion();
+}
+
+function showQuestion() {
+  if (currentQ >= quizQuestions.length) { showResult(); return; }
+  const data = quizQuestions[currentQ];
+  document.getElementById('quizProg').textContent = `Pregunta ${currentQ+1} de ${quizQuestions.length}`;
+  document.getElementById('quizQ').textContent = data.q;
   const optsEl = document.getElementById('quizOpts');
   optsEl.innerHTML = '';
   data.opts.forEach((opt, i) => {
@@ -1657,72 +1421,296 @@ function renderQuiz() {
     btn.onclick = () => answerQuiz(i);
     optsEl.appendChild(btn);
   });
-  document.getElementById('quizFB').className = 'quiz-feedback';
+  document.getElementById('quizFB').className = 'quiz-fb';
   document.getElementById('quizFB').textContent = '';
-  document.getElementById('quizNext').className = 'quiz-next';
+  const next = document.getElementById('quizNext');
+  next.className = 'btn-green quiz-next';
+  next.textContent = currentQ === quizQuestions.length - 1 ? '🏆 Ver resultado' : 'Siguiente →';
   answered = false;
 }
- 
+
 function answerQuiz(idx) {
   if (answered) return;
   answered = true;
-  const data = quizData[currentQ];
+  const data = quizQuestions[currentQ];
   const opts = document.querySelectorAll('.quiz-opt');
-  opts[idx].classList.add(idx === data.correct ? 'correct' : 'wrong');
-  if (idx !== data.correct) opts[data.correct].classList.add('correct');
- 
+  opts[idx].classList.add(idx === data.c ? 'correct' : 'wrong');
+  if (idx !== data.c) opts[data.c].classList.add('correct');
+  if (idx === data.c) score++;
   const fb = document.getElementById('quizFB');
-  fb.textContent = (idx === data.correct ? '✅ ' : '❌ ') + data.feedback;
-  fb.className = 'quiz-feedback show ' + (idx === data.correct ? 'good' : 'bad');
- 
-  document.getElementById('quizNext').className = 'quiz-next show';
-  if (currentQ === quizData.length - 1) {
-    document.getElementById('quizNext').textContent = '🏆 Ver resultado final';
-  }
+  fb.textContent = (idx === data.c ? '' : '❌ Incorrecto. ') + data.fb;
+  fb.className   = 'quiz-fb show ' + (idx === data.c ? 'good' : 'bad');
+  document.getElementById('quizNext').classList.add('show');
 }
- 
-function nextQuestion() {
-  currentQ++;
-  if (currentQ >= quizData.length) {
-    document.getElementById('quizBox').innerHTML = `
-      <div style="text-align:center;padding:20px">
-        <div style="font-size:4rem;margin-bottom:16px">🏆</div>
-        <h3 style="font-family:'Fredoka One',cursive;font-size:1.6rem;color:var(--green-dark);margin-bottom:12px">¡Completaste el Quiz!</h3>
-        <p style="color:var(--slate);margin-bottom:24px">¡Excelente trabajo! Ahora ve al <b>Escape Room</b> para poner en práctica todo lo que aprendiste.</p>
-        <button class="calc-btn" style="width:auto;padding:14px 32px" onclick="goTo('escape')">🔐 Ir al Escape Room</button>
-      </div>`;
-    return;
-  }
+
+function nextQuestion() { currentQ++; showQuestion(); }
+
+function showResult() {
+  const pct = Math.round((score / quizQuestions.length) * 100);
+  const emoji = pct >= 80 ? '🏆' : pct >= 60 ? '😊' : '📚';
+  const msg   = pct >= 80 ? '¡Eres un experto financiero!' : pct >= 60 ? '¡Vas muy bien, sigue aprendiendo!' : '¡No te rindas, practica más!';
+  document.getElementById('quizBox').innerHTML = `
+    <div style="text-align:center;padding:20px">
+      <div style="font-size:4rem;margin-bottom:14px">${emoji}</div>
+      <h3 style="font-family:'Fredoka One',cursive;font-size:1.5rem;color:var(--green-dark);margin-bottom:8px">${msg}</h3>
+      <p style="color:var(--slate);margin-bottom:6px">Respondiste <b>${score} de ${quizQuestions.length}</b> preguntas correctamente</p>
+      <p style="font-size:2rem;font-weight:900;color:var(--green);margin-bottom:22px">${pct}%</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="btn-green" onclick="renderQuiz();document.getElementById('quizBox').innerHTML='';renderQuizBox()">🔄 Nuevas preguntas</button>
+        <button class="btn-gold" onclick="goTo('escape')">🔐 Ir al Escape Room</button>
+      </div>
+    </div>`;
+}
+
+function renderQuizBox() {
+  const box = document.getElementById('quizBox');
+  box.innerHTML = `
+    <div class="quiz-header"><h3>¿Cuánto sabes sobre finanzas?</h3><span class="quiz-progress" id="quizProg"></span></div>
+    <div class="quiz-q" id="quizQ"></div>
+    <div class="quiz-opts" id="quizOpts"></div>
+    <div class="quiz-fb" id="quizFB"></div>
+    <div class="quiz-actions"><button class="btn-green quiz-next" id="quizNext" onclick="nextQuestion()">Siguiente →</button></div>`;
   renderQuiz();
 }
- 
-renderQuiz();
- 
-// ═══════════════════════════════════════
-// ESCAPE ROOM PLACEHOLDER LOADER
-// ═══════════════════════════════════════
-function loadEscapeRoom() {
-  // Create a new screen dynamically for the escape room game
-  let er = document.getElementById('screen-escape-room');
-  if (!er) {
-    er = document.createElement('div');
-    er.id = 'screen-escape-room';
-    er.className = 'screen active';
-    er.innerHTML = `
-      <div style="min-height:calc(100vh - 58px);background:linear-gradient(160deg,#1e1b4b,#312e81);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center;">
-        <div style="font-size:3rem;margin-bottom:16px">🔐</div>
-        <h2 style="font-family:'Fredoka One',cursive;font-size:2rem;color:white;margin-bottom:12px">¡El Escape Room está en construcción!</h2>
-        <p style="color:rgba(255,255,255,.7);max-width:480px;margin:0 auto 28px;">Pronto aquí encontrarás la historia interactiva con decisiones y múltiples finales. ¡Vuelve pronto!</p>
-        <button onclick="goTo('escape')" style="background:var(--gold);color:white;border:none;font-family:'Fredoka One',cursive;font-size:1.1rem;padding:14px 32px;border-radius:14px;cursor:pointer;">← Regresar</button>
-      </div>`;
-    document.querySelector('.page').appendChild(er);
+
+// ─── CHALLENGE TRACKERS ──────────────────
+const CH_DAYS = { 1: 7, 2: 7, 3: 30 };
+
+function initChallengeTrackers() {
+  [1, 2, 3].forEach(n => {
+    const el   = document.getElementById('ch' + n + '-tracker');
+    const days = CH_DAYS[n];
+    const saved = JSON.parse(localStorage.getItem('ch' + n + '-days') || '[]');
+    const text  = localStorage.getItem('ch' + n + '-text') || '';
+    if (text) {
+      document.getElementById('ch' + n + '-text').value = text;
+      document.getElementById('ch' + n + '-saved').classList.add('show');
+    }
+    el.innerHTML = '';
+    for (let d = 1; d <= days; d++) {
+      const btn = document.createElement('button');
+      btn.className = 'ch-day' + (saved.includes(d) ? ' done' : '');
+      btn.textContent = d;
+      btn.title = 'Día ' + d;
+      btn.onclick = () => toggleDay(n, d, btn);
+      el.appendChild(btn);
+    }
+  });
+}
+
+function toggleDay(n, d, btn) {
+  btn.classList.toggle('done');
+  let saved = JSON.parse(localStorage.getItem('ch' + n + '-days') || '[]');
+  if (btn.classList.contains('done')) saved.push(d);
+  else saved = saved.filter(x => x !== d);
+  localStorage.setItem('ch' + n + '-days', JSON.stringify(saved));
+}
+
+function saveChallenge(n) {
+  const text = document.getElementById('ch' + n + '-text').value.trim();
+  if (!text) { alert('Por favor escribe tu compromiso antes de guardar.'); return; }
+  localStorage.setItem('ch' + n + '-text', text);
+  document.getElementById('ch' + n + '-saved').classList.add('show');
+}
+
+// ─── CASE STUDY ─────────────────────────
+function checkCase() {
+  const total    = parseFloat(document.getElementById('c-total').value) || 0;
+  const ahorro   = parseFloat(document.getElementById('c-ahorro').value) || 0;
+  const hormiga  = parseFloat(document.getElementById('c-hormiga').value) || 0;
+  const mesAhorro= parseFloat(document.getElementById('c-mesahorro').value) || 0;
+
+  // Real answers
+  const rTotal     = 310;  // 80+120+60+50 = 310
+  const rAhorro    = 90;   // 400-310
+  const rHormiga   = 60;   // snacks/refrescos
+  const rMesAhorro = 240;  // 60/semana × 4 semanas
+
+  const totalOk    = Math.abs(total - rTotal)     < 20;
+  const ahorroOk   = Math.abs(ahorro - rAhorro)   < 20;
+  const hormigaOk  = Math.abs(hormiga - rHormiga) < 15;
+  const mesOk      = Math.abs(mesAhorro - rMesAhorro) < 40;
+
+  const score4 = [totalOk, ahorroOk, hormigaOk, mesOk].filter(Boolean).length;
+
+  let msg = '';
+  if (!totalOk)    msg += `\n🔹 Total de gastos: La respuesta correcta es <b>$310</b> (transporte $80 + comida $120 + snacks $60 + datos $50). Tu respuesta: $${total}.`;
+  else             msg += `\n✅ Total de gastos: ¡Correcto! $310.`;
+  if (!ahorroOk)   msg += `\n🔹 Le queda para ahorrar: Son <b>$90</b> ($400 ingresos − $310 gastos). Tu respuesta: $${ahorro}.`;
+  else             msg += `\n✅ Le queda para ahorrar: ¡Correcto! $90.`;
+  if (!hormigaOk)  msg += `\n🔹 Gasto hormiga: Son los <b>$60 en snacks y refrescos</b>, gastos pequeños que se podrían evitar. Tu respuesta: $${hormiga}.`;
+  else             msg += `\n✅ Gasto hormiga: ¡Correcto! $60.`;
+  if (!mesOk)      msg += `\n🔹 Ahorro mensual si elimina hormiga: Sería <b>$240 al mes</b> ($60/semana × 4 semanas). Tu respuesta: $${mesAhorro}.`;
+  else             msg += `\n✅ Ahorro mensual posible: ¡Correcto! $240.`;
+
+  const intro = score4 === 4
+    ? '🏆 ¡Perfecto! Respondiste todo correctamente. Eres un analista financiero en potencia. '
+    : score4 >= 2
+    ? '👍 ¡Buen intento! Acertaste ' + score4 + ' de 4. Aquí la retroalimentación de cada respuesta: '
+    : '📚 Sigue practicando. Acertaste ' + score4 + ' de 4. No te rindas, aquí te explico: ';
+
+  const suggestion = score4 < 4
+    ? '<br><br>💡 <b>Consejo de Monedín:</b> Revisa la sección de <b>Gasto Hormiga</b> y la <b>Calculadora de Presupuesto</b> para reforzar estos conceptos. ¡Cada error es una oportunidad de aprender!'
+    : '<br><br>🌟 <b>Monedín dice:</b> ¡Ahora ve al Escape Room y demuestra que eres un crack financiero!';
+
+  const el = document.getElementById('aiResponse');
+  el.classList.add('show');
+  document.getElementById('aiText').innerHTML = intro + msg.replace(/\n/g, '<br>') + suggestion;
+}
+
+// ─── MURO COMUNITARIO ────────────────────
+function renderMuroAuth() {
+  const loginBox = document.getElementById('wallLoginBox');
+  const wallContent = document.getElementById('wallContent');
+  if (currentUser) {
+    loginBox.style.display = 'none';
+    wallContent.style.display = 'block';
+    loadWallPosts();
   } else {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    er.classList.add('active');
+    loginBox.style.display = 'block';
+    wallContent.style.display = 'none';
   }
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function publishPost() {
+  if (!currentUser) { alert('Inicia sesión primero.'); return; }
+  const reto  = document.getElementById('wall-reto').value;
+  const texto = document.getElementById('wall-texto').value.trim();
+  if (!reto)  { alert('Selecciona un reto.'); return; }
+  if (!texto) { alert('Escribe tu compromiso.'); return; }
+  if (texto.length > 300) { alert('Máximo 300 caracteres.'); return; }
+
+  try {
+    await db.collection('commitments').add({
+      uid:       currentUser.uid,
+      name:      currentUser.displayName || 'Estudiante',
+      photoURL:  currentUser.photoURL || '',
+      reto,
+      texto,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById('wall-reto').value = '';
+    document.getElementById('wall-texto').value = '';
+  } catch(e) { alert('Error al publicar: ' + e.message); }
+}
+
+function loadWallPosts() {
+  const postsEl = document.getElementById('wallPosts');
+  const countEl = document.getElementById('wallCount');
+  postsEl.innerHTML = '<div class="wall-empty">⏳ Cargando compromisos...</div>';
+
+  db.collection('commitments')
+    .orderBy('timestamp', 'desc')
+    .limit(50)
+    .onSnapshot(snap => {
+      countEl.textContent = snap.size + ' compromiso' + (snap.size !== 1 ? 's' : '') + ' del grupo 💪';
+      if (snap.empty) {
+        postsEl.innerHTML = '<div class="wall-empty">🌱 Sé el primero en publicar tu compromiso de ahorro.</div>';
+        return;
+      }
+      postsEl.innerHTML = '';
+      snap.forEach(doc => {
+        const d = doc.data();
+        const ts = d.timestamp?.toDate ? d.timestamp.toDate().toLocaleDateString('es-MX', { day:'numeric', month:'short', year:'numeric' }) : 'Reciente';
+        const isOwn = currentUser && d.uid === currentUser.uid;
+        const div = document.createElement('div');
+        div.className = 'wall-post';
+        div.innerHTML = `
+          <div class="wall-post-header">
+            <img class="wall-post-avatar" src="${d.photoURL || 'https://ui-avatars.com/api/?name='+encodeURIComponent(d.name)+'&background=0f766e&color=fff'}" alt="${d.name}">
+            <div><div class="wall-post-name">${d.name}</div><div class="wall-post-time">${ts}</div></div>
+          </div>
+          <span class="wall-post-tag">${d.reto}</span>
+          <div class="wall-post-text">${d.texto}</div>
+          ${isOwn ? `<button class="wall-post-delete" onclick="deletePost('${doc.id}')">🗑️ Eliminar mi publicación</button>` : ''}`;
+        postsEl.appendChild(div);
+      });
+    }, err => {
+      postsEl.innerHTML = '<div class="wall-empty">❌ Error al cargar. Recarga la página.</div>';
+      console.error(err);
+    });
+}
+
+async function deletePost(id) {
+  if (!confirm('¿Eliminar tu publicación?')) return;
+  await db.collection('commitments').doc(id).delete();
+}
+
+// ─── GLOSARIO ────────────────────────────
+const GLOSSARY = [
+  { t:'Ingreso',           d:'Todo el dinero que recibes: mesada, sueldo, regalos o cualquier otra fuente de dinero.' },
+  { t:'Gasto',             d:'Dinero que usas para pagar algo. Puede ser necesario (comida, transporte) u opcional (diversión).' },
+  { t:'Presupuesto',       d:'Plan que decides de antemano para organizar cómo vas a usar tu dinero.' },
+  { t:'Ahorro',            d:'Parte de tu dinero que guardas para el futuro o para una meta específica.' },
+  { t:'Gasto hormiga',     d:'Pequeños gastos frecuentes que parecen insignificantes pero que sumados representan mucho dinero.' },
+  { t:'Interés',           d:'Costo de usar dinero prestado (deuda) o ganancia por prestar tu dinero (ahorro).' },
+  { t:'Interés compuesto', d:'Interés que se calcula sobre el capital inicial más los intereses ya ganados. ¡Hace crecer el dinero exponencialmente!' },
+  { t:'Deuda',             d:'Dinero que debes a alguien y que tienes la obligación de devolver, generalmente con intereses.' },
+  { t:'Inversión',         d:'Usar dinero para comprar algo (acciones, negocio) con la esperanza de ganar más dinero en el futuro.' },
+  { t:'Liquidez',          d:'Qué tan fácil es convertir un bien en dinero en efectivo. El efectivo es el activo más líquido.' },
+  { t:'Fondo de emergencia',d:'Dinero ahorrado específicamente para gastos inesperados como enfermedades o reparaciones urgentes.' },
+  { t:'Inflación',         d:'Aumento generalizado de los precios con el tiempo, lo que reduce el poder de compra del dinero.' },
+  { t:'Crédito',           d:'Capacidad de obtener dinero prestado con el compromiso de pagarlo después, generalmente con intereses.' },
+  { t:'AFORE',             d:'Administradora de Fondos para el Retiro. Guarda y hace crecer el dinero de tu pensión cuando seas mayor.' },
+  { t:'CETES',             d:'Certificados de la Tesorería. Una forma segura de invertir dinero en el gobierno de México.' },
+  { t:'Regla 50-30-20',    d:'Método de presupuesto: 50% de tus ingresos para necesidades, 30% para deseos y 20% para ahorro.' },
+  { t:'Activo',            d:'Algo que tienes y que tiene valor: dinero, propiedades, acciones, etc.' },
+  { t:'Pasivo',            d:'Una deuda u obligación financiera que debes pagar.' },
+  { t:'Finanzas personales',d:'El manejo del dinero a nivel individual o familiar: presupuesto, ahorro, inversión y control de gastos.' },
+  { t:'Saldo',             d:'Diferencia entre ingresos y gastos. Si es positivo, te sobra dinero. Si es negativo, debes más de lo que tienes.' },
+];
+
+function renderGlossary(filter = '') {
+  const grid = document.getElementById('glossaryGrid');
+  const filtered = GLOSSARY.filter(g =>
+    g.t.toLowerCase().includes(filter.toLowerCase()) ||
+    g.d.toLowerCase().includes(filter.toLowerCase())
+  );
+  if (!filtered.length) {
+    grid.innerHTML = '<p style="color:var(--slate);text-align:center;padding:20px">No se encontraron resultados para "' + filter + '"</p>';
+    return;
+  }
+  grid.innerHTML = filtered.map(g => `
+    <div class="glossary-item">
+      <h4>🪙 ${g.t}</h4>
+      <p>${g.d}</p>
+    </div>`).join('');
+}
+
+function filterGlossary(val) { renderGlossary(val); }
+
+// ─── TIP ROTATOR ─────────────────────────
+const TIPS = [
+  '💡 Separa tu ahorro al inicio de la semana, antes de gastar en cualquier otra cosa.',
+  '🐜 Un refresco diario puede costarte hasta $600 al mes. ¡Lleva agua de casa!',
+  '📊 Usa la regla 50-30-20: necesidades, deseos y ahorro en proporciones claras.',
+  '🎯 Define una meta específica para tu ahorro. Sin meta, el dinero se va solo.',
+  '📱 Revisa tus suscripciones digitales. ¿Cuántas realmente usas cada mes?',
+  '🛒 Antes de comprar algo, pregúntate: ¿Lo necesito o solo lo quiero ahora?',
+  '📅 Registra tus gastos diariamente. Basta con una nota en tu celular.',
+  '💪 El mejor momento para empezar a ahorrar fue ayer. El segundo mejor es HOY.',
+  '🏦 Un fondo de emergencia te protege de gastos inesperados sin endeudarte.',
+  '🌱 Pequeños hábitos constantes crean grandes resultados financieros con el tiempo.',
+];
+let tipIdx = 0;
+let tipInterval = null;
+
+function startTipRotator() {
+  if (tipInterval) return;
+  showTip();
+  tipInterval = setInterval(showTip, 5000);
+}
+
+function showTip() {
+  const el = document.getElementById('tipText');
+  if (!el) return;
+  el.style.opacity = '0';
+  setTimeout(() => {
+    el.textContent = TIPS[tipIdx % TIPS.length];
+    el.style.opacity = '1';
+    tipIdx++;
+  }, 300);
 }
 </script>
 </body>
 </html>
- 
