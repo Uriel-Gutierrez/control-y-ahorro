@@ -1,510 +1,642 @@
-text
-
-// ============================================
-// CONTROL Y AHORRO - CBTIS 76
-// script.js
-// ============================================
-
-// ── FIREBASE CONFIG ──────────────────────────
-firebase.initializeApp({
-  apiKey: "AIzaSyA7nnJY9Eq08mDbjDmegGBki8zSKI5RkTE",
-  authDomain: "control-y-ahorro.firebaseapp.com",
-  projectId: "control-y-ahorro",
-  storageBucket: "control-y-ahorro.firebasestorage.app",
-  messagingSenderId: "1074694673223",
-  appId: "1:1074694673223:web:0058bebdf739f1d46c7262"
-});
-const db   = firebase.firestore();
-const auth = firebase.auth();
-let currentUser = null;
-
-auth.onAuthStateChanged(u => {
-  currentUser = u;
-  const av = document.getElementById('userAvatar');
-  const lb = document.getElementById('loginBtn');
-  if (u) {
-    av.src = u.photoURL || '';
-    av.style.display = 'block';
-    lb.style.display = 'none';
-  } else {
-    av.style.display = 'none';
-    lb.style.display = 'block';
-  }
-  updateProf();
-  if (document.getElementById('screen-muro')?.classList.contains('active')) renderMuroAuth();
-});
-
-function signInGoogle() {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).catch(console.error);
-}
-function signOut() {
-  if (confirm('¿Cerrar sesión?')) auth.signOut();
-}
-
-// ── NAVEGACIÓN + HISTORY API ──────────────────
-const SCREENS = ['home','aprende','organiza','interactiva','muro','glosario','recursos','escape'];
-
-function goTo(id) {
-  SCREENS.forEach(s => {
-    document.getElementById('screen-' + s)?.classList.remove('active');
-    document.getElementById('nav-' + s)?.classList.remove('active');
-  });
-  document.getElementById('screen-' + id)?.classList.add('active');
-  document.getElementById('nav-' + id)?.classList.add('active');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  if (history.state?.s !== id) history.pushState({ s: id }, '', '#' + id);
-  if (id === 'muro')    renderMuroAuth();
-  if (id === 'glosario') { renderGloss(); renderFC(); }
-  if (id === 'recursos') startTips();
-  document.getElementById('mobileMenu')?.classList.remove('open');
-}
-
-window.addEventListener('popstate', e => goTo(e.state?.s || 'home'));
-window.addEventListener('load', () => {
-  const h = location.hash.replace('#', '');
-  if (h && SCREENS.includes(h)) goTo(h);
-  else history.replaceState({ s: 'home' }, '', '#home');
-  initCoins();
-  initStars();
-  initTrackers();
-  renderQuiz();
-  renderCases();
-  rotateBubble();
-  loadStats();
-  applyTheme();
-});
-
-// ── DARK MODE ─────────────────────────────────
-let dark = localStorage.getItem('darkMode') === 'true';
-function applyTheme() {
-  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-  const t = document.getElementById('darkToggle');
-  if (t) t.checked = dark;
-}
-function toggleDark(val) {
-  dark = val;
-  localStorage.setItem('darkMode', String(dark));
-  applyTheme();
-}
-
-// ── SETTINGS PANEL ────────────────────────────
-function openSettings() {
-  document.getElementById('spanel').classList.add('open');
-  document.getElementById('sov').classList.add('open');
-  loadStats();
-}
-function closeSettings() {
-  document.getElementById('spanel').classList.remove('open');
-  document.getElementById('sov').classList.remove('open');
-}
-function toggleMenu() {
-  document.getElementById('mobileMenu').classList.toggle('open');
-}
-function updateProf() {
-  const box = document.getElementById('profBox');
-  if (!box) return;
-  if (currentUser) {
-    box.innerHTML = `
-      <div class="prof-card">
-        <img src="${currentUser.photoURL || ''}"
-          onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.displayName || 'U')}&background=0f766e&color=fff'"
-          alt="">
-        <div>
-          <div class="p-name">${currentUser.displayName || 'Estudiante'}</div>
-          <div class="p-email">${currentUser.email || ''}</div>
-        </div>
-      </div>
-      <button class="danger-btn" style="margin-top:10px" onclick="signOut()">🚪 Cerrar sesión</button>`;
-  } else {
-    box.innerHTML = `
-      <p style="color:var(--slate);font-size:.85rem">Inicia sesión para ver tu perfil.</p>
-      <button class="btn-g" style="margin-top:10px;font-size:.82rem;padding:9px 18px"
-        onclick="signInGoogle();closeSettings()">Entrar con Google</button>`;
-  }
-}
-function loadStats() {
-  document.getElementById('st-quiz').textContent  = localStorage.getItem('stat-quiz')  || 0;
-  document.getElementById('st-cases').textContent = localStorage.getItem('stat-cases') || 0;
-  let days = 0;
-  [1, 2, 3].forEach(n => {
-    const d = JSON.parse(localStorage.getItem('ch' + n + '-days') || '[]');
-    days += d.length;
-  });
-  document.getElementById('st-days').textContent = days;
-  const streak = parseInt(localStorage.getItem('streak') || 0);
-  const sn = document.getElementById('streakNum');
-  if (sn) sn.textContent = streak;
-}
-function clearData() {
-  if (!confirm('¿Borrar todo tu progreso local? No se puede deshacer.')) return;
-  ['ch1-days','ch2-days','ch3-days','ch1-text','ch2-text','ch3-text',
-   'stat-quiz','stat-cases','streak','darkMode','caseIdx'].forEach(k => localStorage.removeItem(k));
-  initTrackers();
-  loadStats();
-  alert('✅ Progreso borrado correctamente.');
-}
-
-// ── DECORACIÓN: MONEDAS Y ESTRELLAS ───────────
-function initCoins() {
-  const bg = document.getElementById('coinsBg');
-  if (!bg) return;
-  ['🪙','💰','💵','💴','🏦'].forEach(e => {
-    for (let i = 0; i < 3; i++) {
-      const c = document.createElement('div');
-      c.className = 'coin-float';
-      c.textContent = e;
-      c.style.left = Math.random() * 100 + '%';
-      c.style.animationDuration = (8 + Math.random() * 12) + 's';
-      c.style.animationDelay    = (Math.random() * 10) + 's';
-      c.style.fontSize = (1.1 + Math.random() * 1.3) + 'rem';
-      bg.appendChild(c);
+/* ══════════════════════════════════════
+       VARIABLES LIGHT / DARK
+    ══════════════════════════════════════ */
+    :root {
+      --bg:         #f8fafc;
+      --bg2:        #edf7f6;
+      --surface:    #ffffff;
+      --ink:        #1e293b;
+      --slate:      #475569;
+      --border:     #e2e8f0;
+      --green:      #0f766e;
+      --green-dark: #134e4a;
+      --green-deep: #0d3d38;
+      --green-lite: #ccfbf1;
+      --green-glow: #5eead4;
+      --gold:       #f59e0b;
+      --gold-dark:  #d97706;
+      --gold-lite:  #fef3c7;
+      --red:        #ef4444;
+      --blue:       #3b82f6;
+      --purple:     #7c3aed;
+      --shadow:     0 6px 24px rgba(0,0,0,.10);
+      --shadow-lg:  0 12px 40px rgba(0,0,0,.15);
     }
-  });
-}
-function initStars() {
-  const bg = document.getElementById('starsBg');
-  if (!bg) return;
-  for (let i = 0; i < 55; i++) {
-    const s = document.createElement('div');
-    s.className = 'star';
-    const sz = 1 + Math.random() * 3;
-    s.style.cssText = `width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;animation-duration:${2+Math.random()*4}s;animation-delay:${Math.random()*4}s`;
-    bg.appendChild(s);
-  }
-}
-
-// ── BUBBLE ROTATOR ────────────────────────────
-const BUBBLES = [
-  '¡Hola! Soy <b>Monedín</b> 👋<br>¡Cuida tu dinero!',
-  '💡 $10 al día = <b>$3,600</b> al año',
-  '🐜 ¡El gasto hormiga<br>te devora el dinero!',
-  '🎯 Define una meta<br>¡y empieza hoy!',
-  '📊 Usa la regla<br><b>50 · 30 · 20</b>',
-  '🏦 ¡Págarte a ti<br>primero siempre!',
-  '💪 ¡Tú puedes lograr<br>tus metas! 🌟',
-  '📅 Anota tus gastos<br>cada día 📝',
-  '🎓 La educación<br>financiera = libertad',
-];
-let bIdx = 0;
-function rotateBubble() {
-  const el = document.getElementById('heroBubble');
-  if (el) { el.innerHTML = BUBBLES[bIdx % BUBBLES.length]; bIdx++; }
-  setTimeout(rotateBubble, 4000);
-}
-
-// ── MONEDÍN DIÁLOGOS ALEATORIOS ───────────────
-const DIALS = {
-  ingresos: [
-    'Los <span class="hw">ingresos</span> son todo el dinero que recibes y los <span class="hw">gastos</span> en lo que lo usas. ¡La clave es que siempre sobre algo!',
-    '¿Sabías que un <span class="hw">ingreso</span> puede ser hasta un regalo? ¡Cualquier dinero que entra cuenta!',
-    'Un solo mensaje: <span class="hw">gana más de lo que gastas</span>. Parece simple, pero el 70% de los jóvenes en México no lo hace.',
-  ],
-  presupuesto: [
-    'Un <span class="hw">presupuesto</span> es decidir ANTES cómo usar tu dinero. ¡Como un plan de videojuego para tus finanzas!',
-    'La regla <span class="hw">50-30-20</span> es la más fácil: la mitad para vivir, menos de un tercio para disfrutar, y el resto para tu futuro.',
-    'Sin <span class="hw">presupuesto</span> gastas por impulso. Con presupuesto, <b>tú</b> controlas el dinero.',
-  ],
-  hormiga: [
-    '¡Cuidado! Los <span class="hw">gastos hormiga</span> son pequeñísimos pero se juntan y te devoran el dinero. 🐜',
-    'Un refresco al día parecen $20 inocentes, pero son <span class="hw">$600 al mes</span>. ¿Te das cuenta del impacto?',
-    'Los <span class="hw">gastos hormiga</span> digitales son los más peligrosos: apps y suscripciones automáticas. ¡Revisa tu banco ahora!',
-  ],
-  ahorro: [
-    'Ahorrar es <span class="hw">pagarte a ti primero</span>. Separa el ahorro ANTES de gastar. ¡Así siempre guardas!',
-    'El secreto del ahorro no es cuánto sino la <span class="hw">constancia</span>. $10 diarios baten a $300 de una sola vez.',
-    'Define una <span class="hw">meta específica</span>. "Quiero ahorrar para audífonos" es mejor que "quiero ahorrar". ¡La especificidad motiva!',
-  ],
-  deuda: [
-    'La <span class="hw">deuda</span> no es mala si la usas bien. El problema es gastar lo que no tienes en cosas que ya no tendrás. 💳',
-    '¿Sabes qué es el <span class="hw">interés compuesto</span>? Tu amigo si ahorras, tu enemigo si debes.',
-    'El <span class="hw">pago mínimo</span> de tarjeta es una trampa. Si solo pagas lo mínimo, podrías pagar el doble del precio original.',
-  ],
-};
-
-function showTopic(id, btn) {
-  document.querySelectorAll('.topic-content').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('topic-' + id)?.classList.add('active');
-  btn.classList.add('active');
-  const d = DIALS[id];
-  if (d) {
-    const el = document.getElementById('dial-' + id);
-    if (el) el.innerHTML = d[Math.floor(Math.random() * d.length)];
-  }
-}
-function showTool(id, btn) {
-  document.querySelectorAll('.tool-panel').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tool-tab').forEach(b => b.classList.remove('active'));
-  document.getElementById('tool-' + id)?.classList.add('active');
-  btn.classList.add('active');
-}
-
-// ── CALCULADORA DE PRESUPUESTO ─────────────────
-function calcPres() {
-  const ing = parseFloat(document.getElementById('p-ing').value) || 0;
-  const ids  = ['p-com','p-tra','p-esc','p-ent','p-hor','p-otr'];
-  const gas  = ids.reduce((s, id) => s + (parseFloat(document.getElementById(id).value) || 0), 0);
-  const sal  = ing - gas;
-  const pct  = ing > 0 ? Math.min(gas / ing * 100, 100) : 0;
-  document.getElementById('pr-i').textContent = '$' + ing.toFixed(0);
-  document.getElementById('pr-g').textContent = '$' + gas.toFixed(0);
-  document.getElementById('pr-s').textContent = (sal >= 0 ? '+$' : '-$') + Math.abs(sal).toFixed(0);
-  document.getElementById('pr-s').style.color = sal >= 0 ? '#4ade80' : '#f87171';
-  document.getElementById('presRes').style.display = 'flex';
-  setTimeout(() => {
-    const b = document.getElementById('pr-bar');
-    b.style.width      = pct + '%';
-    b.style.background = pct > 85 ? '#ef4444' : pct > 65 ? '#f59e0b' : '#4ade80';
-  }, 100);
-  const fb = document.getElementById('pres-fb');
-  if (sal < 0)
-    fb.innerHTML = `<div class="gold-box" style="border-color:#ef4444"><h3>⚠️ ¡Gastas más de lo que tienes!</h3><p>Te excedes por <b>$${Math.abs(sal).toFixed(0)}</b>. Revisa entretenimiento y gasto hormiga.</p></div>`;
-  else if (sal < ing * 0.2)
-    fb.innerHTML = `<div class="hl"><h3>🟡 Puedes mejorar el ahorro</h3><p>Te sobran <b>$${sal.toFixed(0)}</b>. El ideal es el 20% = <b>$${(ing*0.2).toFixed(0)}</b>. ¡Reduce gastos opcionales!</p></div>`;
-  else
-    fb.innerHTML = `<div class="hl" style="border-color:#16a34a;background:#dcfce7"><h3 style="color:#14532d">🎉 ¡Excelente presupuesto!</h3><p style="color:#166534">Ahorras <b>$${sal.toFixed(0)}</b> (${(sal/ing*100).toFixed(0)}%). ¡Monedín está muy orgulloso! 🏆</p></div>`;
-}
-
-// ── CALCULADORA GASTO HORMIGA ─────────────────
-let hormN = 0;
-function addHormRow() {
-  if (hormN >= 5) { alert('Máximo 5 gastos personalizados.'); return; }
-  hormN++;
-  const id  = 'hc' + hormN;
-  const row = document.createElement('div');
-  row.className = 'cust-row';
-  row.id = 'cr' + id;
-  row.innerHTML = `
-    <input type="text"   placeholder="Nombre del gasto">
-    <input type="number" placeholder="$0" min="0" id="${id}">
-    <button class="rm-btn" onclick="document.getElementById('cr${id}').remove()">✕</button>`;
-  document.getElementById('hormCustom').appendChild(row);
-}
-function calcHorm() {
-  let dia = ['h-cafe','h-snack','h-apps','h-taxi']
-    .reduce((s, id) => s + (parseFloat(document.getElementById(id).value) || 0), 0);
-  for (let i = 1; i <= hormN; i++) {
-    const el = document.getElementById('hc' + i);
-    if (el) dia += parseFloat(el.value) || 0;
-  }
-  const mes = dia * 30, anio = dia * 365;
-  document.getElementById('h-d').textContent = '$' + dia.toFixed(0);
-  document.getElementById('h-m').textContent = '$' + mes.toFixed(0);
-  document.getElementById('h-a').textContent = '$' + anio.toFixed(0);
-  document.getElementById('hormRes').style.display = 'flex';
-  const fb = document.getElementById('horm-fb');
-  if (dia > 0) {
-    const eq = anio > 5000 ? '¡un viaje de fin de cursos! 🏖️'
-             : anio > 2000 ? 'unos buenos audífonos y más 🎧'
-             : 'varios gustos importantes 🎁';
-    fb.innerHTML = `<div class="gold-box" style="margin-top:12px"><h3>😮 ¡Ese dinero equivale a ${eq}</h3><p>Con <b>$${dia.toFixed(0)}/día</b> en gastos pequeños, en un año pierdes <b>$${anio.toFixed(0)}</b>. ¿Vale la pena?</p></div>`;
-  }
-}
-
-// ── CALCULADORA META DE AHORRO ────────────────
-function calcMeta() {
-  const nom   = document.getElementById('m-nom').value || 'tu meta';
-  const costo = parseFloat(document.getElementById('m-costo').value) || 0;
-  const dias  = parseInt(document.getElementById('m-dias').value)    || 1;
-  const tengo = parseFloat(document.getElementById('m-tengo').value) || 0;
-  const falta = Math.max(costo - tengo, 0);
-  const porDia = falta / dias, porSem = porDia * 7;
-  const pct   = costo > 0 ? Math.min(tengo / costo * 100, 100) : 0;
-  document.getElementById('m-d').textContent = '$' + porDia.toFixed(2);
-  document.getElementById('m-s').textContent = '$' + porSem.toFixed(2);
-  document.getElementById('m-f').textContent = '$' + falta.toFixed(0);
-  document.getElementById('metaRes').style.display = 'flex';
-  document.getElementById('meta-prog').style.display = 'block';
-  setTimeout(() => { document.getElementById('m-bar').style.width = pct + '%'; }, 100);
-  document.getElementById('m-msg').textContent = pct > 0
-    ? `¡Ya tienes el ${pct.toFixed(0)}% de "${nom}"! 💪`
-    : `Ahorra $${porDia.toFixed(2)}/día y en ${dias} días tendrás "${nom}"!`;
-}
-
-// ── QUIZ ──────────────────────────────────────
-const QB = [
-  { q:'¿Cuál es un ejemplo de gasto hormiga?', opts:['Pagar la colegiatura','Comprar refresco diario','Pagar el transporte','Comprar útiles'], c:1, fb:'✅ $20 de refresco al día = $600 al mes. 🐜', l:'e' },
-  { q:'¿Qué es un ingreso?', opts:['Dinero que gastas','Dinero que recibes','Una deuda','Un gasto necesario'], c:1, fb:'✅ El ingreso es todo el dinero que entra a tu bolsillo.', l:'e' },
-  { q:'¿Cuál es un gasto NECESARIO?', opts:['Videojuegos','Ropa de marca','Transporte escolar','Antojo en la tienda'], c:2, fb:'✅ El transporte para ir a la escuela es una necesidad.', l:'e' },
-  { q:'Si tienes $400 y gastas $350, ¿cuánto te queda?', opts:['$50','$100','$150','$750'], c:0, fb:'✅ $400 - $350 = $50. ¡Matemáticas básicas de finanzas!', l:'e' },
-  { q:'¿Cuál NO es un gasto hormiga?', opts:['Café diario','Snacks en el recreo','Renta mensual','Apps de suscripción'], c:2, fb:'✅ La renta es un gasto fijo grande, no un gasto hormiga.', l:'e' },
-  { q:'Según la regla 50-30-20, ¿qué % va al ahorro?', opts:['50%','30%','20%','10%'], c:2, fb:'✅ 20% siempre al ahorro. 50% necesidades, 30% deseos. 💰', l:'m' },
-  { q:'Con $500, aplicando 50-30-20, ¿cuánto ahorras?', opts:['$50','$100','$150','$250'], c:1, fb:'✅ El 20% de $500 = $100. ¡Tu ahorro semanal! 🏦', l:'m' },
-  { q:'$20 de refresco al día, ¿cuánto suma al mes (30 días)?', opts:['$200','$400','$600','$800'], c:2, fb:'✅ $20 × 30 = $600. ¡Imagina en qué más podrías usarlos!', l:'m' },
-  { q:'¿Qué significa hacer un presupuesto?', opts:['Gastar todo rápido','Planear cómo usar tu dinero antes de gastarlo','Pedir dinero prestado','Guardar el 100%'], c:1, fb:'✅ Un presupuesto es un PLAN previo para tu dinero. 📋', l:'m' },
-  { q:'¿Cuál es la mejor estrategia de ahorro?', opts:['Ahorrar lo que sobre','Esperar a ganar más','Separar el ahorro antes de gastar','Solo en fechas especiales'], c:2, fb:'✅ "Págarte a ti primero" antes de gastar en cualquier cosa. 🌟', l:'m' },
-  { q:'¿Qué es un fondo de emergencia?', opts:['Dinero para diversión','Ahorro para gastos inesperados','Un tipo de deuda','Un plan de inversión'], c:1, fb:'✅ Es dinero guardado para imprevistos. 🛡️', l:'m' },
-  { q:'Sofía recibe $400/semana y gasta $320. ¿Cuánto puede ahorrar?', opts:['$40','$60','$80','$120'], c:2, fb:'✅ $400 - $320 = $80. ¡Ese es el potencial de ahorro semanal!', l:'m' },
-  { q:'¿Qué es el interés compuesto?', opts:['Pagar deudas rápido','Ganar interés sobre tu ahorro Y sobre los intereses previos','Un gasto hormiga','Una multa bancaria'], c:1, fb:'✅ El interés compuesto hace crecer tu dinero exponencialmente. 📈', l:'h' },
-  { q:'¿Diferencia entre deuda buena y mala?', opts:['No hay diferencia','La buena aumenta tu valor (educación), la mala es para gastos consumidos','La mala tiene menor interés','La buena nunca se paga'], c:1, fb:'✅ Endeudarse para estudiar = buena. Deuda por gastos ya consumidos = mala. 💳', l:'h' },
-  { q:'Si ahorras $15 al día durante un año, ¿cuánto acumulas?', opts:['$1,800','$3,500','$5,475','$7,200'], c:2, fb:'✅ $15 × 365 = $5,475. ¡El poder de la constancia! 💪', l:'h' },
-  { q:'¿Qué significa liquidez?', opts:['Tener muchas deudas','Qué tan fácil es convertir un bien en efectivo','Un tipo de ahorro','Gastar mucho'], c:1, fb:'✅ El efectivo es el activo más líquido. 💧', l:'h' },
-  { q:'¿Por qué es mala idea pagar solo el mínimo en tarjeta?', opts:['No hay problema','Genera más intereses y puedes pagar el doble','El banco lo prefiere','Hace crecer tu crédito'], c:1, fb:'✅ El pago mínimo es una trampa. Siempre paga más que el mínimo. ⚠️', l:'h' },
-  { q:'¿Qué es una AFORE?', opts:['Un gasto hormiga','Una app financiera','Administradora que guarda tu dinero de pensión','Un banco digital'], c:2, fb:'✅ Las AFOREs administran tu ahorro para el retiro. 🏦', l:'h' },
-  { q:'Si eliminas $30/día de gasto hormiga, ¿cuánto ahorras en 6 meses?', opts:['$900','$1,800','$5,400','$2,700'], c:2, fb:'✅ $30 × 180 días = $5,400. ¿Ves el poder? 🐜', l:'h' },
-  { q:'¿Qué es el Buró de Crédito?', opts:['Una deuda bancaria','Registro de tu historial como pagador en México','Una app de ahorro','Un tipo de inversión'], c:1, fb:'✅ Un buen historial en el Buró te abre puertas financieras. 📊', l:'h' },
-];
-
-let qQs = [], curQ = 0, answered = false, score = 0;
-
-function shuffle(a) {
-  const b = [...a];
-  for (let i = b.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [b[i], b[j]] = [b[j], b[i]];
-  }
-  return b;
-}
-function renderQuiz() {
-  const easy = shuffle(QB.filter(q => q.l === 'e')).slice(0, 2);
-  const med  = shuffle(QB.filter(q => q.l === 'm')).slice(0, 2);
-  const hard = shuffle(QB.filter(q => q.l === 'h')).slice(0, 2);
-  qQs = [...easy, ...med, ...hard];
-  curQ = 0; score = 0; answered = false;
-  showQ();
-}
-function showQ() {
-  if (curQ >= qQs.length) { showQuizResult(); return; }
-  const d = qQs[curQ];
-  document.getElementById('quizProg').textContent = `Pregunta ${curQ + 1}/${qQs.length}`;
-  const lm = { e:'🟢 Fácil', m:'🟡 Medio', h:'🔴 Difícil' };
-  const lc = { e:'lvl-e',    m:'lvl-m',     h:'lvl-h' };
-  document.getElementById('quizQ').innerHTML = `<span class="qlvl ${lc[d.l]}">${lm[d.l]}</span>${d.q}`;
-  const opts = document.getElementById('quizOpts');
-  opts.innerHTML = '';
-  d.opts.forEach((o, i) => {
-    const b = document.createElement('button');
-    b.className = 'quiz-opt';
-    b.textContent = o;
-    b.onclick = () => ansQ(i);
-    opts.appendChild(b);
-  });
-  document.getElementById('quizFB').className = 'quiz-fb';
-  document.getElementById('quizFB').textContent = '';
-  const nx = document.getElementById('quizNext');
-  nx.className = 'btn-g quiz-next';
-  nx.textContent = curQ === qQs.length - 1 ? '🏆 Ver resultado' : 'Siguiente →';
-  answered = false;
-}
-function ansQ(idx) {
-  if (answered) return;
-  answered = true;
-  const d = qQs[curQ];
-  document.querySelectorAll('.quiz-opt')[idx].classList.add(idx === d.c ? 'correct' : 'wrong');
-  if (idx !== d.c) document.querySelectorAll('.quiz-opt')[d.c].classList.add('correct');
-  if (idx === d.c) score++;
-  const fb = document.getElementById('quizFB');
-  fb.textContent = (idx !== d.c ? '❌ Incorrecto. ' : '') + d.fb;
-  fb.className   = 'quiz-fb show ' + (idx === d.c ? 'good' : 'bad');
-  document.getElementById('quizNext').classList.add('show');
-}
-function nextQ() { curQ++; showQ(); }
-function showQuizResult() {
-  const pct = Math.round(score / qQs.length * 100);
-  const em  = pct >= 80 ? '🏆' : pct >= 60 ? '😊' : '📚';
-  const msg = pct >= 80 ? '¡Eres un experto financiero!' : pct >= 60 ? '¡Vas muy bien!' : '¡Sigue practicando!';
-  const prev = parseInt(localStorage.getItem('stat-quiz') || 0);
-  localStorage.setItem('stat-quiz', prev + 1);
-  const today = new Date().toDateString();
-  const last  = localStorage.getItem('lastActive');
-  const streak = parseInt(localStorage.getItem('streak') || 0);
-  if (last !== today) {
-    localStorage.setItem('streak', last === new Date(Date.now() - 86400000).toDateString() ? streak + 1 : 1);
-    localStorage.setItem('lastActive', today);
-  }
-  document.getElementById('quizBox').innerHTML = `
-    <div style="text-align:center;padding:16px">
-      <div style="font-size:3.5rem;margin-bottom:12px">${em}</div>
-      <h3 style="font-family:'Fredoka One',cursive;font-size:1.4rem;color:var(--green-dark);margin-bottom:6px">${msg}</h3>
-      <p style="color:var(--slate);margin-bottom:4px">Respondiste <b>${score} de ${qQs.length}</b> correctamente</p>
-      <p style="font-size:1.8rem;font-weight:900;color:var(--green);margin-bottom:18px">${pct}%</p>
-      <div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap">
-        <button class="btn-g"    onclick="resetQuiz()">🔄 Nuevas preguntas</button>
-        <button class="btn-gold" onclick="goTo('escape')">🔐 Escape Room</button>
-      </div>
-    </div>`;
-}
-function resetQuiz() {
-  document.getElementById('quizBox').innerHTML = `
-    <div class="quiz-top">
-      <h3>¿Cuánto sabes de finanzas?</h3>
-      <span class="quiz-badge" id="quizProg">Pregunta 1/6</span>
-    </div>
-    <div class="quiz-q"    id="quizQ"></div>
-    <div class="quiz-opts" id="quizOpts"></div>
-    <div class="quiz-fb"   id="quizFB"></div>
-    <div class="quiz-actions">
-      <button class="btn-g quiz-next" id="quizNext" onclick="nextQ()">Siguiente →</button>
-    </div>`;
-  renderQuiz();
-}
-
-// ── RETOS DE AHORRO ───────────────────────────
-const CH = { 1: 7, 2: 7, 3: 30 };
-function initTrackers() {
-  [1, 2, 3].forEach(n => {
-    const el = document.getElementById('ch' + n + '-tracker');
-    if (!el) return;
-    const saved = JSON.parse(localStorage.getItem('ch' + n + '-days') || '[]');
-    const txt   = localStorage.getItem('ch' + n + '-text') || '';
-    if (txt) {
-      const ti = document.getElementById('ch' + n + '-text');
-      if (ti) ti.value = txt;
-      document.getElementById('ch' + n + '-saved')?.classList.add('show');
+    [data-theme="dark"] {
+      --bg:         #0f172a;
+      --bg2:        #1e293b;
+      --surface:    #1e293b;
+      --ink:        #f1f5f9;
+      --slate:      #94a3b8;
+      --border:     #334155;
+      --green-lite: #134e4a;
+      --gold-lite:  #451a03;
+      --shadow:     0 6px 24px rgba(0,0,0,.35);
+      --shadow-lg:  0 12px 40px rgba(0,0,0,.45);
     }
-    el.innerHTML = '';
-    for (let d = 1; d <= CH[n]; d++) {
-      const b = document.createElement('button');
-      b.className = 'ch-day' + (saved.includes(d) ? ' done' : '');
-      b.textContent = d;
-      b.onclick = () => toggleDay(n, d, b);
-      el.appendChild(b);
-    }
-    updateChProg(n);
-  });
-}
-function toggleDay(n, d, btn) {
-  btn.classList.toggle('done');
-  let saved = JSON.parse(localStorage.getItem('ch' + n + '-days') || '[]');
-  if (btn.classList.contains('done')) saved.push(d);
-  else saved = saved.filter(x => x !== d);
-  localStorage.setItem('ch' + n + '-days', JSON.stringify(saved));
-  updateChProg(n);
-}
-function updateChProg(n) {
-  const saved = JSON.parse(localStorage.getItem('ch' + n + '-days') || '[]');
-  const total = CH[n], done = saved.length, pct = Math.round(done / total * 100);
-  const bar = document.getElementById('ch' + n + '-bar');
-  const pc  = document.getElementById('ch' + n + '-pct');
-  if (bar) bar.style.width = pct + '%';
-  if (pc)  pc.textContent  = `${done} de ${total} días (${pct}%)`;
-  const medals = document.getElementById('ch' + n + '-medals');
-  if (medals) {
-    const ms = medals.querySelectorAll('.medal');
-    ms[0].classList.toggle('earned', pct >= 25);
-    ms[1].classList.toggle('earned', pct >= 50);
-    ms[2].classList.toggle('earned', pct >= 75);
-    ms[3].classList.toggle('earned', pct >= 100);
-  }
-}
-function saveChallenge(n) {
-  const txt = document.getElementById('ch' + n + '-text').value.trim();
-  if (!txt) { alert('Por favor escribe tu compromiso antes de guardar.'); return; }
-  localStorage.setItem('ch' + n + '-text', txt);
-  document.getElementById('ch' + n + '-saved')?.classList.add('show');
-}
 
-// ── CASOS PRÁCTICOS ───────────────────────────
-const CASES = [
-  { n:'Sofía',   e:'👧', t:'El caso de Sofía',       s:'Sofía recibe <b>$400/semana</b>. Gastos: transporte $80, comida $120, snacks $60, datos $50. El resto en ropa.',                                     qs:[{l:'¿Cuánto gasta en total?',id:'c0',r:310},{l:'¿Cuánto le queda para ahorrar?',id:'c1',r:90},{l:'¿Cuánto son sus gastos hormiga?',id:'c2',r:60},{l:'Si elimina el hormiga, ¿cuánto ahorra al mes?',id:'c3',r:240}], i:'Analiza los gastos de Sofía:' },
-  { n:'Diego',   e:'👦', t:'El caso de Diego',        s:'Diego trabaja sábados y gana <b>$300/semana</b>. Su mamá le da $150 más. Gastos: transporte $60, comida $140, celular $80, videojuegos $120.',       qs:[{l:'¿Cuánto son sus ingresos totales?',id:'c0',r:450},{l:'¿Cuánto gasta en total?',id:'c1',r:400},{l:'¿Cuánto le sobra (saldo)?',id:'c2',r:50},{l:'¿Qué % de sus ingresos ahorra?',id:'c3',r:11}], i:'Diego combina trabajo y mesada:' },
-  { n:'Ana',     e:'👩', t:'El caso de Ana',          s:'Ana quiere unos tenis de <b>$1,200</b>. Recibe $350/semana y ya tiene $200 ahorrados. Sus gastos fijos son $180/semana.',                             qs:[{l:'¿Cuánto puede ahorrar por semana?',id:'c0',r:170},{l:'¿En cuántas semanas alcanza su meta?',id:'c1',r:6},{l:'¿Cuánto le falta actualmente?',id:'c2',r:1000},{l:'¿Cuánto ahorra al mes aprox?',id:'c3',r:680}], i:'Ana quiere cumplir una meta de ahorro:' },
-  { n:'Carlos',  e:'🧑', t:'El caso de Carlos',       s:'Carlos debe <b>$200 a un amigo y $150 a otro</b>. Prometió pagar en 4 semanas. Recibe $300/semana y gasta $200 en lo básico.',                      qs:[{l:'¿Cuánto debe en total?',id:'c0',r:350},{l:'¿Cuánto le sobra cada semana?',id:'c1',r:100},{l:'¿En cuántas semanas paga toda la deuda?',id:'c2',r:4},{l:'Mientras paga, ¿cuánto puede ahorrar?',id:'c3',r:0}], i:'Carlos tiene deudas. ¿Puede pagarlas?' },
-  { n:'El grupo',e:'👥', t:'La cooperacha del grupo', s:'5 amigos quieren ir a un parque a <b>$350 por persona</b>. El viaje es en 3 semanas. Mesadas: $200, $300, $250, $400, $350.',                        qs:[{l:'¿Cuánto cuesta el viaje total?',id:'c0',r:1750},{l:'¿Cuánto debe ahorrar cada uno por semana?',id:'c1',r:117},{l:'¿Cuánto suman las mesadas del grupo?',id:'c2',r:1500},{l:'¿Cubre una semana de mesadas el costo? (1=Sí, 0=No)',id:'c3',r:0}], i:'El grupo quiere ir al parque. ¿Pueden lograrlo?' },
-  { n:'Miguel',  e:'🧒', t:'Miguel y las suscripciones', s:'Miguel tiene: Netflix $160, Spotify $99, Xbox $119, iCloud $29, fitness $79 (todos al mes). Mesada: $500/semana.',                                qs:[{l:'¿Cuánto gasta en suscripciones al mes?',id:'c0',r:486},{l:'¿Cuánto es eso a la semana?',id:'c1',r:122},{l:'¿Qué % de su mesada semanal son suscripciones?',id:'c2',r:24},{l:'Si cancela 2 ($258/mes), ¿cuánto ahorra al año?',id:'c3',r:3096}], i:'Miguel tiene muchas suscripciones digitales. ¡Analiza el impacto!' },
-  { n:'Valeria', e:'👩‍🎤', t:'Valeria y las propinas', s:'Valeria gana $400 fijos + propinas: semana 1: $80, semana 2: $120, semana 3: $60, semana 4: $140.',                                                 qs:[{l:'¿Cuánto ganó en propinas ese mes?',id:'c0',r:400},{l:'¿Cuánto ganó en total ese mes?',id:'c1',r:2000},{l:'¿Promedio semanal de propinas?',id:'c2',r:100},{l:'Si ahorra el 100% de propinas, ¿cuánto en 3 meses?',id:'c3',r:1200}], i:'Valeria tiene ingresos variables. ¡Calcula!' },
-  { n:'Rodrigo', e:'👱', t:'Rodrigo quiere un celular', s:'Rodrigo quiere un celular de <b>$8,000</b>. Opción A: contado. Opción B: crédito $300/mes × 36 meses. Mesada: $600/semana.',                       qs:[{l:'¿Cuánto cuesta el celular a crédito en total?',id:'c0',r:10800},{l:'¿Cuánto extra paga por el crédito?',id:'c1',r:2800},{l:'¿Cuántas semanas de mesada son $8,000?',id:'c2',r:13},{l:'Ahorrando $200/semana, ¿en cuántas semanas lo compra al contado?',id:'c3',r:40}], i:'Rodrigo evalúa contado vs crédito:' },
-  { n:'Jimena',  e:'💁', t:'Jimena y la ropa',         s:'Jimena gasta <b>$800/mes en ropa</b>. Mesada: $2,000/mes. También: comida $600, transporte $400, celular $200.',                                     qs:[{l:'¿Cuánto gasta en total al mes?',id:'c0',r:2000},{l:'¿Qué % de sus ingresos va a ropa?',id:'c1',r:40},{l:'¿Le queda algo para ahorro? (1=Sí, 0=No)',id:'c2',r:0},{l:'Si reduce ropa a $300, ¿cuánto puede ahorrar?',id:'c3',r:500}], i:'Jimena gasta mucho en ropa. ¿Cómo puede equilibrar sus finanzas?' },
-  { n:'Emilio',  e:'🤷', t:'Emilio: el que no registra nada', s:'Emilio recibe $600/semana. Al revisar su banco: comida rápida $40/día × 5 días, apps $15/día, transporte $20/día.',                         qs:[{l:'¿Cuánto gasta en comida rápida a la semana?',id:'c0',r:200},{l:'¿Cuánto gastan sus apps a la semana?',id:'c1',r:75},{l:'¿Cuánto gasta en total por semana?',id:'c2',r:375},{l:'Cocinando en casa ($15/día), ¿cuánto ahorra a la semana?',id:'c3',r:125}], i:'Emilio descubrió sus gastos ocultos. ¡Calcula el impacto!' },
-  { n:'Paola',   e:'👩‍🎓', t:'Paola y su beca',        s:'Paola recibe <b>beca de $1,500/mes</b>. Gastos: mater
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background .3s, color .3s;
+    }
+
+    /* ══════════════════════════════════════
+       SCREENS
+    ══════════════════════════════════════ */
+    .screen { display: none; animation: fadeIn .35s ease; }
+    .screen.active { display: block; }
+    @keyframes fadeIn {
+      from { opacity:0; transform:translateY(14px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    /* ══════════════════════════════════════
+       NAVBAR
+    ══════════════════════════════════════ */
+    .navbar {
+      position: fixed; top:0; left:0; right:0; z-index:999;
+      background: var(--green-deep);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 16px; height: 58px;
+      box-shadow: 0 2px 16px rgba(0,0,0,.3);
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 9px; cursor: pointer; flex-shrink:0;
+    }
+    .nav-logo { width:34px; height:34px; }
+    .nav-title { font-family:'Fredoka One',cursive; font-size:1.15rem; color:white; }
+    .nav-title span { color: var(--gold); }
+    .nav-links { display:flex; gap:2px; flex-wrap:nowrap; }
+    .nav-btn {
+      background:none; border:none; color:rgba(255,255,255,.7);
+      font-family:'Nunito',sans-serif; font-weight:700; font-size:.75rem;
+      padding:6px 10px; border-radius:8px; cursor:pointer; transition:all .2s;
+      white-space:nowrap;
+    }
+    .nav-btn:hover, .nav-btn.active { background:rgba(255,255,255,.15); color:white; }
+    .nav-btn.active { background:var(--green); }
+    .nav-right { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+    .dark-toggle {
+      background:rgba(255,255,255,.12); border:none; border-radius:50%;
+      width:34px; height:34px; font-size:1rem; cursor:pointer;
+      color:white; transition:background .2s;
+    }
+    .dark-toggle:hover { background:rgba(255,255,255,.25); }
+    .user-avatar {
+      width:32px; height:32px; border-radius:50%; object-fit:cover;
+      border:2px solid var(--gold); cursor:pointer; display:none;
+    }
+    .login-btn {
+      background:var(--gold); color:#7c2d12; border:none;
+      font-family:'Nunito',sans-serif; font-weight:800; font-size:.72rem;
+      padding:6px 12px; border-radius:8px; cursor:pointer; transition:all .2s;
+      white-space:nowrap;
+    }
+    .login-btn:hover { background:#fbbf24; }
+
+    /* ══════════════════════════════════════
+       HAMBURGER (MOBILE)
+    ══════════════════════════════════════ */
+    .hamburger {
+      display:none; flex-direction:column; gap:4px;
+      background:none; border:none; cursor:pointer; padding:6px;
+    }
+    .hamburger span {
+      width:22px; height:2.5px; background:white; border-radius:2px;
+      transition:all .3s;
+    }
+    .mobile-menu {
+      display:none; position:fixed; top:58px; left:0; right:0; z-index:998;
+      background:var(--green-deep); padding:12px 16px;
+      box-shadow:0 8px 24px rgba(0,0,0,.3); flex-direction:column; gap:4px;
+    }
+    .mobile-menu.open { display:flex; }
+    .mobile-menu .nav-btn { text-align:left; font-size:.88rem; padding:10px 14px; }
+
+    @media(max-width:768px) {
+      .nav-links { display:none; }
+      .hamburger { display:flex; }
+    }
+
+    /* ══════════════════════════════════════
+       PAGE WRAPPER
+    ══════════════════════════════════════ */
+    .page { padding-top:58px; min-height:100vh; }
+
+    /* ══════════════════════════════════════
+       SHARED COMPONENTS
+    ══════════════════════════════════════ */
+    .section-hero {
+      background: linear-gradient(135deg, var(--green-deep), var(--green));
+      color:white; padding:52px 24px 44px; text-align:center;
+    }
+    .section-hero h1 {
+      font-family:'Fredoka One',cursive;
+      font-size:clamp(1.8rem,5vw,3rem); margin-bottom:8px;
+    }
+    .section-hero p { color:rgba(255,255,255,.78); max-width:540px; margin:0 auto; }
+
+    .section-body { max-width:1060px; margin:0 auto; padding:44px 20px 60px; }
+
+    .back-btn {
+      display:inline-flex; align-items:center; gap:7px;
+      background:var(--green-lite); color:var(--green-dark);
+      font-weight:800; font-size:.85rem; padding:8px 16px;
+      border-radius:50px; border:none; cursor:pointer; margin-bottom:28px;
+      transition:all .2s;
+    }
+    .back-btn:hover { background:var(--green-glow); }
+
+    .s-label {
+      display:block; font-size:.7rem; letter-spacing:.16em;
+      text-transform:uppercase; color:var(--green); font-weight:800; margin-bottom:5px;
+    }
+    .s-title {
+      font-family:'Fredoka One',cursive; font-size:1.65rem;
+      color:var(--green-dark); margin-bottom:6px;
+    }
+    [data-theme="dark"] .s-title { color:var(--green-glow); }
+    .s-divider {
+      width:46px; height:4px;
+      background:linear-gradient(90deg,var(--green),var(--green-glow));
+      border-radius:2px; margin-bottom:20px;
+    }
+
+    /* CARDS */
+    .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:18px; }
+    .card {
+      background:var(--surface); border-radius:18px; padding:24px 20px;
+      box-shadow:var(--shadow); border-top:4px solid var(--green);
+      transition:transform .2s, box-shadow .2s;
+    }
+    .card:hover { transform:translateY(-4px); box-shadow:var(--shadow-lg); }
+    .card-icon { font-size:2.2rem; margin-bottom:10px; display:block; }
+    .card h3 { font-family:'Fredoka One',cursive; font-size:1.05rem; color:var(--green-dark); margin-bottom:8px; }
+    [data-theme="dark"] .card h3 { color:var(--green-glow); }
+    .card p { color:var(--slate); font-size:.91rem; line-height:1.6; }
+
+    /* HIGHLIGHT */
+    .highlight {
+      background:var(--green-lite); border-left:5px solid var(--green);
+      border-radius:14px; padding:26px 30px; margin:20px 0;
+    }
+    .highlight h3 { font-family:'Fredoka One',cursive; color:var(--green-dark); margin-bottom:8px; }
+    [data-theme="dark"] .highlight h3 { color:var(--green-glow); }
+    .highlight p, .highlight li { color:var(--slate); font-size:.95rem; }
+    .highlight ul { padding-left:18px; margin-top:8px; }
+    .highlight li { margin-bottom:5px; }
+
+    /* GOLD BOX */
+    .gold-box {
+      background:var(--gold-lite); border:2px solid var(--gold);
+      border-radius:14px; padding:24px 28px; margin:20px 0;
+    }
+    .gold-box h3 { font-family:'Fredoka One',cursive; color:var(--gold-dark); margin-bottom:8px; }
+    .gold-box p, .gold-box li { color:#78350f; font-size:.93rem; }
+    [data-theme="dark"] .gold-box p, [data-theme="dark"] .gold-box li { color:#fcd34d; }
+    .gold-box ul { padding-left:18px; margin-top:8px; }
+    .gold-box li { margin-bottom:5px; }
+
+    /* COMIC PANEL */
+    .comic-panel {
+      background:var(--surface); border-radius:18px;
+      box-shadow:var(--shadow); overflow:hidden; margin-bottom:22px;
+    }
+    .comic-header {
+      background:var(--green-deep); color:white; padding:11px 18px;
+      font-family:'Fredoka One',cursive; font-size:.95rem;
+      display:flex; align-items:center; gap:7px;
+    }
+    .comic-body { display:flex; align-items:flex-start; gap:16px; padding:20px; }
+    .comic-mascot { flex-shrink:0; width:64px; }
+    .comic-dialogue {
+      background:var(--green-lite); border-radius:0 16px 16px 16px;
+      padding:13px 16px; position:relative; flex:1;
+    }
+    .comic-dialogue::before {
+      content:''; position:absolute; left:-9px; top:13px;
+      border:9px solid transparent; border-right-color:var(--green-lite); border-left:0;
+    }
+    .comic-dialogue p { color:var(--ink); font-size:.92rem; line-height:1.6; font-weight:600; }
+    .hw { color:var(--green); font-weight:800; }
+
+    /* MINI MASCOT SVG inline */
+    .mmascot { width:64px; height:64px; }
+
+    /* BTN STYLES */
+    .btn-green {
+      background:var(--green); color:white; border:none;
+      font-family:'Fredoka One',cursive; font-size:1rem;
+      padding:13px 28px; border-radius:12px; cursor:pointer;
+      transition:background .2s, transform .1s; letter-spacing:.02em;
+    }
+    .btn-green:hover { background:var(--green-dark); }
+    .btn-green:active { transform:scale(.97); }
+    .btn-gold {
+      background:var(--gold); color:#7c2d12; border:none;
+      font-family:'Fredoka One',cursive; font-size:1rem;
+      padding:13px 28px; border-radius:12px; cursor:pointer;
+      transition:all .2s;
+    }
+    .btn-gold:hover { background:#fbbf24; }
+
+    /* ══════════════════════════════════════
+       HOME SCREEN
+    ══════════════════════════════════════ */
+    .hero {
+      background:linear-gradient(160deg, var(--green-deep) 0%, #0f5c56 50%, #166a62 100%);
+      min-height:calc(100vh - 58px);
+      display:flex; flex-direction:column; align-items:center;
+      justify-content:center; padding:40px 20px 60px;
+      position:relative; overflow:hidden; text-align:center;
+    }
+    .coins-bg { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
+    .coin-float {
+      position:absolute; font-size:1.6rem; opacity:.16;
+      animation:floatUp linear infinite;
+    }
+    @keyframes floatUp {
+      0%   { transform:translateY(110vh) rotate(0deg); opacity:0; }
+      10%  { opacity:.16; }
+      90%  { opacity:.16; }
+      100% { transform:translateY(-20vh) rotate(360deg); opacity:0; }
+    }
+    .mascot-wrap {
+      position:relative; margin-bottom:20px;
+      animation:bounce 3s ease-in-out infinite;
+    }
+    @keyframes bounce {
+      0%,100% { transform:translateY(0); }
+      50%      { transform:translateY(-10px); }
+    }
+    .mascot-big { width:130px; height:130px; filter:drop-shadow(0 8px 24px rgba(0,0,0,.4)); }
+    .speech-bubble {
+      position:absolute; top:-16px; right:-134px;
+      background:white; color:var(--ink); font-size:.78rem; font-weight:700;
+      line-height:1.4; padding:9px 13px; border-radius:14px 14px 14px 4px;
+      width:148px; box-shadow:0 4px 14px rgba(0,0,0,.18);
+      animation:bubblePop .5s .8s both cubic-bezier(.34,1.56,.64,1);
+    }
+    .speech-bubble::before {
+      content:''; position:absolute; left:-8px; top:12px;
+      border:8px solid transparent; border-right-color:white; border-left:0;
+    }
+    @keyframes bubblePop {
+      from { opacity:0; transform:scale(.5); }
+      to   { opacity:1; transform:scale(1); }
+    }
+    .hero-badge {
+      display:inline-block; background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.28); color:var(--green-glow);
+      font-size:.72rem; font-weight:800; letter-spacing:.16em;
+      text-transform:uppercase; padding:5px 18px; border-radius:50px; margin-bottom:14px;
+    }
+    .hero h1 {
+      font-family:'Fredoka One',cursive;
+      font-size:clamp(2.6rem,7vw,4.5rem); color:white;
+      line-height:1.05; margin-bottom:12px;
+    }
+    .hero h1 .accent { color:var(--gold); }
+    .hero-sub { font-size:1.05rem; color:rgba(255,255,255,.74); max-width:520px; margin:0 auto 36px; }
+
+    /* MENU GRID */
+    .menu-grid {
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr));
+      gap:14px; max-width:860px; width:100%; margin:0 auto;
+    }
+    .menu-card {
+      background:rgba(255,255,255,.1); backdrop-filter:blur(8px);
+      border:1.5px solid rgba(255,255,255,.18); border-radius:18px;
+      padding:22px 14px; cursor:pointer; text-align:center; color:white;
+      transition:all .25s cubic-bezier(.34,1.56,.64,1); position:relative; overflow:hidden;
+    }
+    .menu-card:hover { transform:translateY(-7px) scale(1.04); border-color:rgba(255,255,255,.45); box-shadow:0 14px 36px rgba(0,0,0,.28); }
+    .menu-card-icon { font-size:2.4rem; margin-bottom:8px; display:block; }
+    .menu-card-title { font-family:'Fredoka One',cursive; font-size:1rem; letter-spacing:.02em; }
+    .menu-card-desc { font-size:.72rem; color:rgba(255,255,255,.65); margin-top:4px; }
+    .card-new {
+      position:absolute; top:8px; right:8px; background:var(--gold);
+      color:#7c2d12; font-size:.58rem; font-weight:900; padding:2px 7px;
+      border-radius:50px; text-transform:uppercase; letter-spacing:.08em;
+    }
+
+    /* ══════════════════════════════════════
+       APRENDE SCREEN – TOPIC TABS
+    ══════════════════════════════════════ */
+    .topic-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px; }
+    .topic-btn {
+      background:var(--surface); border:2px solid var(--border);
+      color:var(--green-dark); font-family:'Nunito',sans-serif;
+      font-weight:800; font-size:.83rem; padding:8px 16px;
+      border-radius:50px; cursor:pointer; transition:all .2s;
+    }
+    .topic-btn:hover, .topic-btn.active {
+      background:var(--green); color:white; border-color:var(--green);
+    }
+    .topic-content { display:none; animation:fadeIn .3s ease; }
+    .topic-content.active { display:block; }
+
+    /* ══════════════════════════════════════
+       ORGANIZA – TOOLS
+    ══════════════════════════════════════ */
+    .tool-tabs { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:28px; }
+    .tool-tab {
+      background:var(--surface); border:2px solid var(--border);
+      color:var(--green-dark); font-family:'Nunito',sans-serif;
+      font-weight:800; font-size:.83rem; padding:8px 16px;
+      border-radius:50px; cursor:pointer; transition:all .2s;
+    }
+    .tool-tab:hover, .tool-tab.active {
+      background:var(--green); color:white; border-color:var(--green);
+    }
+    .tool-panel { display:none; animation:fadeIn .3s ease; }
+    .tool-panel.active { display:block; }
+
+    .budget-box {
+      background:var(--surface); border-radius:20px;
+      padding:30px; box-shadow:var(--shadow); margin-bottom:22px;
+    }
+    .budget-box h3 { font-family:'Fredoka One',cursive; font-size:1.25rem; color:var(--green-dark); margin-bottom:18px; }
+    [data-theme="dark"] .budget-box h3 { color:var(--green-glow); }
+    .b-row { display:flex; align-items:center; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
+    .b-row label { flex:1; min-width:180px; font-weight:700; font-size:.88rem; color:var(--slate); }
+    .b-row input {
+      width:130px; padding:9px 13px; border:2px solid var(--border);
+      border-radius:10px; font-family:'Nunito',sans-serif; font-size:.97rem;
+      font-weight:700; color:var(--ink); background:var(--bg); outline:none;
+      transition:border-color .2s;
+    }
+    .b-row input:focus { border-color:var(--green); }
+    .b-result {
+      background:var(--green-deep); color:white; border-radius:14px;
+      padding:22px; margin-top:16px; display:none;
+      justify-content:space-around; flex-wrap:wrap; gap:14px;
+    }
+    .b-stat { text-align:center; }
+    .b-val { font-family:'Fredoka One',cursive; font-size:1.9rem; color:var(--gold); }
+    .b-lbl { font-size:.74rem; color:rgba(255,255,255,.65); font-weight:700; }
+    .bar-wrap { background:rgba(255,255,255,.15); border-radius:50px; height:11px; overflow:hidden; margin-top:6px; }
+    .bar-fill { height:100%; border-radius:50px; background:var(--gold); transition:width .8s ease; width:0; }
+
+    /* ══════════════════════════════════════
+       ZONA INTERACTIVA
+    ══════════════════════════════════════ */
+    /* QUIZ */
+    .quiz-box {
+      background:var(--surface); border-radius:20px;
+      padding:28px; box-shadow:var(--shadow);
+    }
+    .quiz-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:8px; }
+    .quiz-header h3 { font-family:'Fredoka One',cursive; font-size:1.2rem; color:var(--green-dark); }
+    [data-theme="dark"] .quiz-header h3 { color:var(--green-glow); }
+    .quiz-progress {
+      font-size:.78rem; font-weight:700; color:var(--slate);
+      background:var(--bg2); padding:5px 12px; border-radius:50px;
+    }
+    .quiz-q { font-size:1rem; font-weight:700; color:var(--ink); margin-bottom:16px; line-height:1.55; }
+    .quiz-opts { display:grid; gap:9px; }
+    .quiz-opt {
+      background:var(--bg); border:2px solid var(--border); border-radius:12px;
+      padding:12px 16px; font-family:'Nunito',sans-serif; font-weight:700;
+      font-size:.91rem; color:var(--ink); cursor:pointer; text-align:left; transition:all .2s;
+    }
+    .quiz-opt:hover { border-color:var(--green); background:var(--green-lite); }
+    .quiz-opt.correct { background:#dcfce7; border-color:#16a34a; color:#14532d; }
+    .quiz-opt.wrong   { background:#fee2e2; border-color:#dc2626; color:#7f1d1d; }
+    .quiz-fb {
+      margin-top:14px; padding:13px 16px; border-radius:12px;
+      font-weight:700; font-size:.91rem; display:none;
+    }
+    .quiz-fb.show { display:block; animation:fadeIn .3s ease; }
+    .quiz-fb.good { background:#dcfce7; color:#14532d; }
+    .quiz-fb.bad  { background:#fee2e2; color:#7f1d1d; }
+    .quiz-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+    .quiz-next { display:none; }
+    .quiz-next.show { display:inline-block; }
+
+    /* CHALLENGES */
+    .challenge-list { display:grid; gap:16px; }
+    .challenge-card {
+      background:var(--surface); border-radius:18px;
+      padding:24px; box-shadow:var(--shadow); position:relative; overflow:hidden;
+    }
+    .challenge-card::before { content:''; position:absolute; top:0; left:0; right:0; height:4px; background:var(--c-color,var(--green)); }
+    .ch-tag {
+      display:inline-block; background:var(--green-lite); color:var(--green-dark);
+      font-size:.68rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+      padding:3px 10px; border-radius:50px; margin-bottom:10px;
+    }
+    .challenge-card h3 { font-family:'Fredoka One',cursive; font-size:1.1rem; color:var(--ink); margin-bottom:6px; }
+    .challenge-card p { color:var(--slate); font-size:.9rem; margin-bottom:14px; }
+    .ch-input {
+      width:100%; padding:10px 14px; border:2px solid var(--border);
+      border-radius:10px; font-family:'Nunito',sans-serif; font-size:.92rem;
+      font-weight:600; color:var(--ink); background:var(--bg); outline:none;
+      transition:border-color .2s; resize:vertical; min-height:60px;
+      margin-bottom:10px;
+    }
+    .ch-input:focus { border-color:var(--green); }
+    .ch-tracker { display:flex; gap:5px; flex-wrap:wrap; margin:10px 0; }
+    .ch-day {
+      width:32px; height:32px; border-radius:8px; border:2px solid var(--border);
+      background:var(--bg); font-size:.7rem; font-weight:800; color:var(--slate);
+      cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center;
+    }
+    .ch-day.done { background:var(--green); border-color:var(--green); color:white; }
+    .ch-saved { background:#dcfce7; border:1px solid #86efac; border-radius:10px; padding:10px 14px; margin-top:8px; font-size:.88rem; color:#14532d; font-weight:700; display:none; }
+    .ch-saved.show { display:block; }
+
+    /* CASE STUDY */
+    .case-box { background:var(--surface); border-radius:20px; padding:28px; box-shadow:var(--shadow); }
+    .case-box h3 { font-family:'Fredoka One',cursive; font-size:1.2rem; color:var(--green-dark); margin-bottom:14px; }
+    [data-theme="dark"] .case-box h3 { color:var(--green-glow); }
+    .case-input-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+    .case-input-row label { flex:1; min-width:150px; font-weight:700; font-size:.88rem; color:var(--slate); }
+    .case-input-row input {
+      width:120px; padding:9px 12px; border:2px solid var(--border); border-radius:10px;
+      font-family:'Nunito',sans-serif; font-size:.95rem; font-weight:700;
+      color:var(--ink); background:var(--bg); outline:none; transition:border-color .2s;
+    }
+    .case-input-row input:focus { border-color:var(--green); }
+    .ai-response {
+      margin-top:18px; background:var(--bg2); border-radius:14px;
+      padding:20px; border-left:4px solid var(--green); display:none;
+    }
+    .ai-response.show { display:block; animation:fadeIn .4s ease; }
+    .ai-response .ai-header { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+    .ai-response .ai-header img { width:36px; height:36px; }
+    .ai-response .ai-header span { font-family:'Fredoka One',cursive; font-size:1rem; color:var(--green-dark); }
+    [data-theme="dark"] .ai-response .ai-header span { color:var(--green-glow); }
+    .ai-text { color:var(--ink); font-size:.93rem; line-height:1.7; }
+    .ai-loading { display:flex; align-items:center; gap:8px; color:var(--slate); font-weight:700; }
+    .spinner { width:18px; height:18px; border:3px solid var(--border); border-top-color:var(--green); border-radius:50%; animation:spin .7s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* ══════════════════════════════════════
+       MURO COMUNITARIO
+    ══════════════════════════════════════ */
+    .wall-login-box {
+      text-align:center; background:var(--surface); border-radius:20px;
+      padding:44px 28px; box-shadow:var(--shadow); max-width:480px; margin:0 auto;
+    }
+    .wall-login-box h3 { font-family:'Fredoka One',cursive; font-size:1.4rem; color:var(--green-dark); margin-bottom:10px; }
+    [data-theme="dark"] .wall-login-box h3 { color:var(--green-glow); }
+    .wall-login-box p { color:var(--slate); font-size:.93rem; margin-bottom:22px; }
+    .google-btn {
+      display:inline-flex; align-items:center; gap:10px;
+      background:white; color:#3c4043; border:1.5px solid #dadce0;
+      font-family:'Nunito',sans-serif; font-weight:700; font-size:.95rem;
+      padding:11px 24px; border-radius:12px; cursor:pointer; transition:all .2s;
+      box-shadow:0 2px 8px rgba(0,0,0,.08);
+    }
+    .google-btn:hover { box-shadow:0 4px 14px rgba(0,0,0,.15); transform:translateY(-1px); }
+    .google-btn img { width:20px; }
+
+    .wall-form {
+      background:var(--surface); border-radius:18px;
+      padding:26px; box-shadow:var(--shadow); margin-bottom:24px;
+    }
+    .wall-form h3 { font-family:'Fredoka One',cursive; font-size:1.1rem; color:var(--green-dark); margin-bottom:14px; }
+    [data-theme="dark"] .wall-form h3 { color:var(--green-glow); }
+    .wall-form select, .wall-form textarea {
+      width:100%; padding:10px 14px; border:2px solid var(--border); border-radius:10px;
+      font-family:'Nunito',sans-serif; font-size:.92rem; font-weight:600;
+      color:var(--ink); background:var(--bg); outline:none; transition:border-color .2s;
+      margin-bottom:10px;
+    }
+    .wall-form select:focus, .wall-form textarea:focus { border-color:var(--green); }
+    .wall-form textarea { resize:vertical; min-height:70px; }
+
+    .wall-posts { display:grid; gap:14px; margin-top:8px; }
+    .wall-post {
+      background:var(--surface); border-radius:16px;
+      padding:18px 20px; box-shadow:var(--shadow);
+      border-left:4px solid var(--green); animation:fadeIn .4s ease;
+    }
+    .wall-post-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+    .wall-post-avatar { width:36px; height:36px; border-radius:50%; object-fit:cover; }
+    .wall-post-name { font-weight:800; font-size:.9rem; color:var(--ink); }
+    .wall-post-time { font-size:.75rem; color:var(--slate); }
+    .wall-post-tag {
+      display:inline-block; background:var(--green-lite); color:var(--green-dark);
+      font-size:.68rem; font-weight:800; padding:2px 9px; border-radius:50px; margin-bottom:6px;
+    }
+    .wall-post-text { color:var(--slate); font-size:.91rem; line-height:1.6; }
+    .wall-post-delete {
+      background:none; border:none; color:var(--red); font-size:.78rem;
+      font-weight:700; cursor:pointer; margin-top:6px; padding:0;
+    }
+    .wall-empty { text-align:center; color:var(--slate); padding:40px; font-size:.95rem; }
+
+    /* ══════════════════════════════════════
+       GLOSARIO
+    ══════════════════════════════════════ */
+    .glossary-search {
+      width:100%; padding:12px 18px; border:2px solid var(--border); border-radius:12px;
+      font-family:'Nunito',sans-serif; font-size:1rem; font-weight:600;
+      color:var(--ink); background:var(--bg); outline:none; margin-bottom:22px;
+      transition:border-color .2s;
+    }
+    .glossary-search:focus { border-color:var(--green); }
+    .glossary-grid { display:grid; gap:12px; }
+    .glossary-item {
+      background:var(--surface); border-radius:14px; padding:18px 20px;
+      box-shadow:var(--shadow); border-left:3px solid var(--green);
+      transition:transform .15s;
+    }
+    .glossary-item:hover { transform:translateX(5px); }
+    .glossary-item h4 { font-family:'Fredoka One',cursive; font-size:1rem; color:var(--green-dark); margin-bottom:5px; }
+    [data-theme="dark"] .glossary-item h4 { color:var(--green-glow); }
+    .glossary-item p { color:var(--slate); font-size:.9rem; }
+
+    /* ══════════════════════════════════════
+       RECURSOS
+    ══════════════════════════════════════ */
+    .resource-card {
+      background:var(--surface); border-radius:18px; padding:22px 20px;
+      box-shadow:var(--shadow); display:flex; gap:16px; align-items:flex-start;
+      margin-bottom:14px; transition:transform .2s;
+    }
+    .resource-card:hover { transform:translateX(5px); }
+    .resource-icon { width:50px; height:50px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; flex-shrink:0; }
+    .resource-card h3 { font-family:'Fredoka One',cursive; font-size:1rem; color:var(--green-dark); margin-bottom:4px; }
+    [data-theme="dark"] .resource-card h3 { color:var(--green-glow); }
+    .resource-card p { color:var(--slate); font-size:.88rem; margin-bottom:8px; }
+    .resource-link {
+      display:inline-block; color:var(--green); font-weight:800; font-size:.83rem;
+      text-decoration:none; border-bottom:2px solid transparent; transition:border-color .2s;
+    }
+    .resource-link:hover { border-color:var(--green); }
+
+    .tip-rotator {
+      background:var(--green-deep); color:white; border-radius:18px;
+      padding:24px 28px; margin-bottom:28px; position:relative; overflow:hidden;
+    }
+    .tip-rotator h3 { font-family:'Fredoka One',cursive; font-size:1rem; color:var(--green-glow); margin-bottom:8px; }
+    .tip-text { color:rgba(255,255,255,.85); font-size:.95rem; line-height:1.65; font-weight:600; min-height:48px; transition:opacity .3s; }
+
+    /* ══════════════════════════════════════
+       ESCAPE ROOM ENTRY
+    ══════════════════════════════════════ */
+    .escape-hero {
+      background:linear-gradient(160deg, #1e1b4b 0%, #312e81 40%, #1e3a5f 100%);
+      min-height:calc(100vh - 58px);
+      display:flex; flex-direction:column; align-items:center;
+      justify-content:center; text-align:center; padding:40px 20px;
+      position:relative; overflow:hidden;
+    }
+    .stars-bg { position:absolute; inset:0; pointer-events:none; }
+    .star { position:absolute; background:white; border-radius:50%; animation:twinkle ease-in-out infinite; }
+    @keyframes twinkle { 0%,100%{opacity:.15} 50%{opacity:.9} }
+    .escape-badge {
+      display:inline-block; background:rgba(245,158,11,.2);
+      border:1px solid rgba(245,158,11,.5); color:var(--gold);
+      font-size:.7rem; font-weight:800; letter-spacing:.18em; text-transform:uppercase;
+      padding:5px 18px; border-radius:50px; margin-bottom:18px;
+    }
+    .escape-hero h1 {
+      font-family:'Fredoka One',cursive;
+      font-size:clamp(2rem,6vw,3.8rem); color:white; line-height:1.1; margin-bottom:10px;
+    }
+    .escape-hero h1 .gold { color:var(--gold); }
+    .escape-hero p { color:rgba(255,255,255,.73); font-size:1rem; max-width:500px; margin:0 auto 32px; }
+    .escape-start {
+      background:linear-gradient(135deg,var(--gold),#f97316); color:white; border:none;
+      font-family:'Fredoka One',cursive; font-size:1.2rem; padding:16px 44px;
+      border-radius:16px; cursor:pointer; box-shadow:0 8px 28px rgba(245,158,11,.4);
+      transition:all .25s cubic-bezier(.34,1.56,.64,1); letter-spacing:.04em;
+    }
+    .escape-start:hover { transform:translateY(-4px) scale(1.05); box-shadow:0 14px 36px rgba(245,158,11,.55); }
+    .escape-stats { display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-top:36px; }
+    .escape-stat {
+      background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.18);
+      border-radius:12px; padding:14px 20px; color:white; text-align:center; min-width:110px;
+    }
+    .escape-stat .es-val { font-family:'Fredoka One',cursive; font-size:1.4rem; color:var(--gold); }
+    .escape-stat .es-lbl { font-size:.72rem; color:rgba(255,255,255,.6); font-weight:700; }
+
+    /* ══════════════════════════════════════
+       FOOTER
+    ══════════════════════════════════════ */
+    footer {
+      background:var(--green-deep); color:rgba(255,255,255,.5);
+      text-align:center; padding:26px 20px; font-size:.82rem;
+    }
+    footer span { color:var(--green-glow); font-weight:700; }
+
+    /* ══════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════ */
+    @media(max-width:600px) {
+      .menu-grid { grid-template-columns:repeat(2,1fr); }
+      .speech-bubble { display:none; }
+      .budget-box { padding:18px; }
+      .b-row { flex-direction:column; align-items:flex-start; }
+      .b-row input { width:100%; }
+    }
